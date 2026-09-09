@@ -1,0 +1,33 @@
+{
+  "name": "3d-property-twin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test:backend": "node scripts/test_backend.js",
+    "test:frontend": "node scripts/test_frontend.js",
+    "test": "npm run test:backend && npm run test:frontend"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.116.0",
+    "cesium": "^1.145.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "resium": "^1.26.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.1.0",
+    "oxlint": "^1.79.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.2.2",
+    "vite-plugin-cesium": "^1.2.23"
+  }
+}
