@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { cadastreService } from '../services/cadastreService';
-import type { CandidateVsu, Building, EvidenceSource } from '../types/cadastre';
+import type { CandidateVsu, Building, EvidenceSource, UserRole } from '../types/cadastre';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { MetricChip } from '../components/common/MetricChip';
 
 interface RegistryViewProps {
   onNavigateTo3D: (vsu: CandidateVsu) => void;
   onNavigateToVerify?: (vsu: CandidateVsu) => void;
+  currentRole?: UserRole;
 }
 
 export const RegistryView: React.FC<RegistryViewProps> = ({
   onNavigateTo3D,
   onNavigateToVerify,
+  currentRole = 'public_demo',
 }) => {
   const [vsus, setVsus] = useState<CandidateVsu[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -65,17 +67,51 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
     return true;
   });
 
+  const isPublic = currentRole === 'public_demo';
+  const isSurveyor = currentRole === 'surveyor';
+  const isOfficer = currentRole === 'municipal_officer';
+  const isAdmin = currentRole === 'admin';
+
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       {/* Main Table Workspace */}
       <div style={{ flex: 1, padding: '20px 24px', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)' }}>
-              Vertical Cadastre Registry
-            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)' }}>
+                {isPublic
+                  ? 'Public Vertical Property Registry'
+                  : isSurveyor
+                  ? 'Field Candidate VSU Registry'
+                  : isOfficer
+                  ? 'Statutory Vertical Land Registry'
+                  : 'Master 3D-ULPIN Spatial Database'}
+              </h1>
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: isPublic ? 'rgba(2, 132, 199, 0.15)' : isSurveyor ? 'rgba(217, 119, 6, 0.15)' : isOfficer ? 'rgba(124, 58, 237, 0.15)' : 'rgba(5, 150, 105, 0.15)',
+                  color: isPublic ? '#0284c7' : isSurveyor ? '#d97706' : isOfficer ? '#7c3aed' : '#059669',
+                  fontFamily: 'var(--font-display)',
+                }}
+              >
+                {isPublic ? 'Citizen Inquiry' : isSurveyor ? 'Surveyor Entry' : isOfficer ? 'Officer Adjudication' : isAdmin ? 'Master Admin' : 'Cadastre Database'}
+              </span>
+            </div>
             <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '12px', marginTop: '2px' }}>
-              Official roster of Candidate Vertical Sub-Units (VSUs) and volumetric deed records
+              {isPublic
+                ? 'Public roster of verified apartments, ground elevations, and floor plans in Zone 4'
+                : isSurveyor
+                ? 'Field measurements, floor boundaries, and candidate unit submissions awaiting verification'
+                : isOfficer
+                ? 'Official legal register for adjudicating ownership, building bylaws, and title deeds'
+                : isAdmin
+                ? 'Master spatial records across all 5 demo buildings (82 candidate units)'
+                : 'Vertical Property Registry'}
             </p>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-outline)' }}>
@@ -160,7 +196,15 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
             }}
           >
             <option value="all">All Floors</option>
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((f) => (
+            {Array.from(
+              {
+                length:
+                  selectedBuildingId !== 'all'
+                    ? buildings.find((b) => b.id === selectedBuildingId)?.totalFloors || 10
+                    : 10,
+              },
+              (_, i) => i + 1
+            ).map((f) => (
               <option key={f} value={f}>
                 Floor {f}
               </option>

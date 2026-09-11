@@ -44,8 +44,8 @@ export default function PropertyInfoPanel({
                 <div className="meta-item"><label>Survey Plot:</label><strong>{CADASTRAL_BASE.surveyPlotNumber}</strong></div>
               </div>
 
-              <div className="verification-badge verified">
-                ✓ Registered & Spatial Deed Confirmed
+              <div className="verification-badge verified" style={{ fontSize: '11px', textAlign: 'center' }}>
+                Candidate VSU Prototype • Requires Authorised Verification
               </div>
             </>
           ) : selectedFloor ? (

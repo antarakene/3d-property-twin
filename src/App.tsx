@@ -21,7 +21,11 @@ export default function App() {
   // Application State
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [currentRole, setCurrentRole] = useState<UserRole>('public_demo');
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa');
   const [selectedVsu, setSelectedVsu] = useState<CandidateVsu | null>(null);
+
+  // Active 3D mode hint
+  const [city3dMode, setCity3dMode] = useState<'cadastre' | 'audit' | 'sos'>('cadastre');
 
   // Badge counts
   const [alertsCount, setAlertsCount] = useState<number>(3);
@@ -45,13 +49,29 @@ export default function App() {
     loadCounts();
   }, [activeTab]);
 
-  const handleSelectBuildingFromDash = (_buildingId: string) => {
+  const handleSelectBuildingFromDash = (buildingId: string) => {
+    setSelectedBuildingId(buildingId);
+    setCity3dMode('cadastre');
     setActiveTab('city3d');
+    setTimeout(() => {
+      if (viewerRef.current?.cesiumElement) {
+        viewerRef.current.cesiumElement.resize();
+      }
+    }, 50);
   };
 
   const handleNavigateTo3DFromRegistry = (vsu: CandidateVsu) => {
+    if (vsu.buildingId) {
+      setSelectedBuildingId(vsu.buildingId);
+    }
     setSelectedVsu(vsu);
+    setCity3dMode('cadastre');
     setActiveTab('city3d');
+    setTimeout(() => {
+      if (viewerRef.current?.cesiumElement) {
+        viewerRef.current.cesiumElement.resize();
+      }
+    }, 50);
   };
 
   const handleNavigateToVerify = (vsu: CandidateVsu) => {
@@ -61,6 +81,7 @@ export default function App() {
 
   const handleTriggerEscapeFromSos = () => {
     // Navigate to 3D and trigger escape route
+    setCity3dMode('sos');
     setActiveTab('city3d');
   };
 
@@ -96,6 +117,8 @@ export default function App() {
               onNavigateTab={setActiveTab}
               onSelectBuilding={handleSelectBuildingFromDash}
               onSelectVsu={handleNavigateTo3DFromRegistry}
+              currentRole={currentRole}
+              pendingTasksCount={pendingTasksCount}
             />
           )}
 
@@ -104,9 +127,13 @@ export default function App() {
             <City3DView
               viewerRef={viewerRef}
               floors={floors}
+              selectedBuildingId={selectedBuildingId}
+              onSelectBuilding={setSelectedBuildingId}
               selectedVsu={selectedVsu}
               onSelectVsu={setSelectedVsu}
               onNavigateToVerify={handleNavigateToVerify}
+              initialMode={city3dMode}
+              currentRole={currentRole}
             />
           </div>
 
@@ -115,6 +142,7 @@ export default function App() {
             <RegistryView
               onNavigateTo3D={handleNavigateTo3DFromRegistry}
               onNavigateToVerify={handleNavigateToVerify}
+              currentRole={currentRole}
             />
           )}
 
@@ -127,7 +155,15 @@ export default function App() {
           )}
 
           {/* Satellite & Survey Discrepancy Studio */}
-          {activeTab === 'discrepancies' && <DiscrepancyStudioView />}
+          {activeTab === 'discrepancies' && (
+            <DiscrepancyStudioView
+              onNavigateTab={(tab) => setActiveTab(tab)}
+              onSelectBuilding={(bId) => {
+                setSelectedBuildingId(bId);
+                setActiveTab('city3d');
+              }}
+            />
+          )}
 
           {/* Surveyor Verification Queue */}
           {activeTab === 'verification' && (

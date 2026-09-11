@@ -109,78 +109,179 @@ export const SEED_BUILDINGS: Building[] = [
   },
 ];
 
-// Procedural Floors & 40 VSUs generator for Tower A
-export function generateSeedTowerAFloorsAndVsus(): { floors: Floor[]; vsus: CandidateVsu[] } {
-  const floors: Floor[] = [];
-  const vsus: CandidateVsu[] = [];
-  const buildingId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+// Procedural Floors & Candidate VSUs generator for All 5 Demonstration Buildings
+export function generateAllSeedFloorsAndVsus(): { floors: Floor[]; vsus: CandidateVsu[] } {
+  const allFloors: Floor[] = [];
+  const allVsus: CandidateVsu[] = [];
 
-  const unitTemplates = [
-    { quad: '1', code: '01', name: 'Penthouse Suite', use: 'Residential 3BHK', carpet: 118.5, builtup: 142.2, occupant: 'Vikramaditya Rao', deed: 'MOCK-REG-2024-8891A' },
-    { quad: '2', code: '02', name: 'Corner Apartment', use: 'Residential 2BHK', carpet: 88.0, builtup: 106.0, occupant: 'Meera S. Kulkarni', deed: 'MOCK-REG-2023-4122B' },
-    { quad: '3', code: '03', name: 'Studio Suite', use: 'Commercial Studio', carpet: 65.4, builtup: 81.2, occupant: 'Apex Digital Labs', deed: 'MOCK-REG-2024-9043C' },
-    { quad: '4', code: '04', name: 'Terrace Flat', use: 'Residential 2BHK', carpet: 94.2, builtup: 114.8, occupant: 'Farhan A. Qureshi', deed: 'MOCK-REG-2022-7719D' },
+  const buildingConfigs = [
+    {
+      id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
+      code: 'A',
+      name: 'Tower A',
+      parcelUlpin: 'DEMO-MH-MUM-0001',
+      floors: 10,
+      storyH: 3.4,
+      podiumH: 1.2,
+      tier: 'Tier A',
+      defaultStatus: 'Verified',
+      units: [
+        { quad: '1', code: '01', name: 'Penthouse Suite A', use: 'Residential 3BHK', carpet: 118.5, builtup: 142.2, occupant: 'Vikramaditya Rao', deed: 'MOCK-REG-2024-8891A' },
+        { quad: '2', code: '02', name: 'Corner Apartment B', use: 'Residential 2BHK', carpet: 88.0, builtup: 106.0, occupant: 'Meera S. Kulkarni', deed: 'MOCK-REG-2023-4122B' },
+        { quad: '3', code: '03', name: 'Studio Suite C', use: 'Commercial Studio', carpet: 65.4, builtup: 81.2, occupant: 'Apex Digital Labs', deed: 'MOCK-REG-2024-9043C' },
+        { quad: '4', code: '04', name: 'Terrace Flat D', use: 'Residential 2BHK', carpet: 94.2, builtup: 114.8, occupant: 'Farhan A. Qureshi', deed: 'MOCK-REG-2022-7719D' },
+      ],
+    },
+    {
+      id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
+      code: 'B',
+      name: 'Tower B',
+      parcelUlpin: 'DEMO-MH-MUM-0001',
+      floors: 9,
+      storyH: 3.4,
+      podiumH: 1.2,
+      tier: 'Tier C',
+      defaultStatus: 'Under Review',
+      units: [
+        { quad: '1', code: '01', name: 'Executive Suite East', use: 'Residential 3BHK', carpet: 124.0, builtup: 152.0, occupant: 'Rajesh V. Deshmukh', deed: 'MOCK-REG-2024-5011B' },
+        { quad: '2', code: '02', name: 'Panorama Residence West', use: 'Residential 3BHK', carpet: 119.5, builtup: 146.8, occupant: 'Pooja Anant Joshi', deed: 'MOCK-REG-2024-5012B' },
+      ],
+    },
+    {
+      id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
+      code: 'COMM',
+      name: 'Commerce Plaza',
+      parcelUlpin: 'DEMO-MH-MUM-0002',
+      floors: 4,
+      storyH: 3.8,
+      podiumH: 0.8,
+      tier: 'Tier C',
+      defaultStatus: 'Draft',
+      units: [
+        { quad: '1', code: '01', name: 'Retail Anchor Wing', use: 'Commercial Retail', carpet: 180.0, builtup: 215.0, occupant: 'Sahyadri Retail Ventures', deed: 'MOCK-REG-2023-1101C' },
+        { quad: '2', code: '02', name: 'Financial & Tech Suite', use: 'Commercial Office', carpet: 165.0, builtup: 198.5, occupant: 'Deccan FinServe Ltd', deed: 'MOCK-REG-2023-1102C' },
+      ],
+    },
+    {
+      id: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
+      code: 'HER',
+      name: 'Heritage Court',
+      parcelUlpin: 'DEMO-MH-MUM-0003',
+      floors: 2,
+      storyH: 3.8,
+      podiumH: 0.9,
+      tier: 'Tier D',
+      defaultStatus: 'Estimated',
+      units: [
+        { quad: '1', code: '01', name: 'Courtyard Manor Flat A', use: 'Heritage Residential', carpet: 135.0, builtup: 162.0, occupant: 'Sardar Yashwant Patwardhan', deed: 'MOCK-REG-1988-HER01' },
+        { quad: '2', code: '02', name: 'Artisan Colonial Flat B', use: 'Heritage Residential', carpet: 128.0, builtup: 154.0, occupant: 'Ananya Dixit', deed: 'MOCK-REG-1992-HER02' },
+      ],
+    },
+    {
+      id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+      code: 'GRN',
+      name: 'Green Residency',
+      parcelUlpin: 'DEMO-MH-MUM-0003',
+      floors: 6,
+      storyH: 3.2,
+      podiumH: 1.2,
+      tier: 'Tier C',
+      defaultStatus: 'Conflict',
+      units: [
+        { quad: '1', code: '01', name: 'Eco Green Garden Flat A', use: 'Eco Residential 2BHK', carpet: 92.0, builtup: 110.0, occupant: 'Gaurav S. Shinde', deed: 'MOCK-REG-2024-GR01' },
+        { quad: '2', code: '02', name: 'Terrace Balcony Flat B', use: 'Eco Residential 2BHK', carpet: 95.5, builtup: 114.5, occupant: 'Nalini Hemant Patil', deed: 'MOCK-REG-2024-GR02' },
+      ],
+    },
   ];
 
-  for (let f = 1; f <= 10; f++) {
-    const zBottom = 1.2 + (f - 1) * 3.4;
-    const zTop = zBottom + 3.4;
-    const floorId = `floor-tower-a-${f}`;
+  for (const bld of buildingConfigs) {
+    for (let f = 1; f <= bld.floors; f++) {
+      const zBottom = bld.podiumH + (f - 1) * bld.storyH;
+      const zTop = zBottom + bld.storyH;
+      const floorId = `floor-${bld.code.toLowerCase()}-${f}`;
 
-    const floorObj: Floor = {
-      id: floorId,
-      buildingId,
-      floorNumber: f,
-      floorLabel: f === 1 ? '1st Floor (Plinth)' : f === 2 ? '2nd Floor Level' : f === 3 ? '3rd Floor Level' : `${f}th Floor Level`,
-      zBottomM: zBottom,
-      zTopM: zTop,
-      floorHeightM: 3.4,
-    };
-
-    const floorVsus: CandidateVsu[] = unitTemplates.map((tpl) => {
-      const unitNumber = `${f}${tpl.code}`;
-      const vsuIdentifier = `DEMO-MH-MUM-0001-VSU-A-${String(f).padStart(2, '0')}-${unitNumber}`;
-      const isEncroached = f === 6 && tpl.code === '02';
-      const isUnderReview = f === 7 && tpl.code === '02';
-
-      const vsuObj: CandidateVsu = {
-        id: `vsu-a-${f}-${tpl.code}`,
-        buildingId,
-        floorId,
+      const floorObj: Floor = {
+        id: floorId,
+        buildingId: bld.id,
         floorNumber: f,
-        prototypeVsuIdentifier: vsuIdentifier,
-        unitNumber,
-        unitName: `${tpl.name} ${unitNumber}`,
-        useType: tpl.use,
-        carpetAreaSqm: tpl.carpet,
-        builtupAreaSqm: tpl.builtup,
-        volumeCum: Number((tpl.builtup * 3.4).toFixed(1)),
+        floorLabel: f === 1 ? '1st Floor (Plinth)' : f === 2 ? '2nd Floor Level' : f === 3 ? '3rd Floor Level' : `${f}th Floor Level`,
         zBottomM: zBottom,
         zTopM: zTop,
-        confidenceTier: 'Tier A',
-        verificationStatus: isUnderReview ? 'Under Review' : isEncroached ? 'Draft' : 'Verified',
-        mockDocumentReference: tpl.deed,
-        mockOccupantName: tpl.occupant,
-        quadrantCode: tpl.quad,
-        hasViolation: isEncroached,
-        violationDetails: isEncroached ? 'Potential setback balcony overhang (+1.65m horizontal deviation)' : null,
+        floorHeightM: bld.storyH,
       };
 
-      vsus.push(vsuObj);
-      return vsuObj;
-    });
+      const floorVsus: CandidateVsu[] = bld.units.map((tpl) => {
+        const unitNumber = `${f}${tpl.code}`;
+        const vsuIdentifier = `${bld.parcelUlpin}-VSU-${bld.code}-${String(f).padStart(2, '0')}-${unitNumber}`;
 
-    floorObj.vsus = floorVsus;
-    floors.push(floorObj);
+        let isViolation = false;
+        let violationDetails: string | null = null;
+        let vsuStatus = bld.defaultStatus as any;
+
+        if (bld.code === 'A' && f === 6 && tpl.code === '02') {
+          isViolation = true;
+          violationDetails = 'Potential setback balcony overhang (+1.65m horizontal deviation)';
+          vsuStatus = 'Draft';
+        } else if (bld.code === 'A' && f === 7 && tpl.code === '02') {
+          vsuStatus = 'Under Review';
+        } else if (bld.code === 'B' && f === 9) {
+          isViolation = true;
+          violationDetails = 'Unauthorized 9th floor level (+4.3m vertical height discrepancy over sanctioned 30.4m)';
+          vsuStatus = 'Under Review';
+        } else if (bld.code === 'GRN' && f === 5 && tpl.code === '02') {
+          isViolation = true;
+          violationDetails = 'Setback margin encroachment: Cantilever terrace extends +1.8m into green buffer';
+          vsuStatus = 'Conflict';
+        }
+
+        const vsuObj: CandidateVsu = {
+          id: `vsu-${bld.code.toLowerCase()}-${f}-${tpl.code}`,
+          buildingId: bld.id,
+          floorId,
+          floorNumber: f,
+          prototypeVsuIdentifier: vsuIdentifier,
+          unitNumber,
+          unitName: `${tpl.name} ${unitNumber}`,
+          useType: tpl.use,
+          carpetAreaSqm: tpl.carpet,
+          builtupAreaSqm: tpl.builtup,
+          volumeCum: Number((tpl.builtup * bld.storyH).toFixed(1)),
+          zBottomM: zBottom,
+          zTopM: zTop,
+          confidenceTier: bld.tier as any,
+          verificationStatus: vsuStatus,
+          mockDocumentReference: tpl.deed,
+          mockOccupantName: tpl.occupant,
+          quadrantCode: tpl.quad,
+          hasViolation: isViolation,
+          violationDetails,
+        };
+
+        allVsus.push(vsuObj);
+        return vsuObj;
+      });
+
+      floorObj.vsus = floorVsus;
+      allFloors.push(floorObj);
+    }
   }
 
-  return { floors, vsus };
+  return { floors: allFloors, vsus: allVsus };
 }
 
-const { floors: TOWER_A_FLOORS, vsus: TOWER_A_VSUS } = generateSeedTowerAFloorsAndVsus();
+export function generateSeedTowerAFloorsAndVsus(): { floors: Floor[]; vsus: CandidateVsu[] } {
+  const { floors, vsus } = generateAllSeedFloorsAndVsus();
+  const towerAId = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
+  return {
+    floors: floors.filter((f) => f.buildingId === towerAId),
+    vsus: vsus.filter((v) => v.buildingId === towerAId),
+  };
+}
 
-export const SEED_FLOORS = TOWER_A_FLOORS;
-export const SEED_VSUS = TOWER_A_VSUS;
+const { floors: ALL_FLOORS, vsus: ALL_VSUS } = generateAllSeedFloorsAndVsus();
+
+export const SEED_FLOORS = ALL_FLOORS;
+export const SEED_VSUS = ALL_VSUS;
 
 export const SEED_EVIDENCE: EvidenceSource[] = [
   {
@@ -328,6 +429,38 @@ export const SEED_TASKS: VerificationTask[] = [
     },
     assignedOfficer: 'Officer A. Patil (Zone 4)',
     updatedAt: '10m ago',
+  },
+  {
+    id: 'task-2',
+    vsuId: 'vsu-b-9-01',
+    vsuIdentifier: 'DEMO-MH-MUM-0001-VSU-B-09-901',
+    verificationStatus: 'Under Review',
+    officerNotes: 'Rooftop Level 9 Elevation Check: Mobile LiDAR and nadir satellite scan flag +4.3m vertical difference over sanctioned 30.4m ceiling datum.',
+    checklistResults: {
+      manifold2d: true,
+      boundaryWithinBuilding: true,
+      verticalClearanceValid: false,
+      noVsuOverlap: true,
+      deedTolerancePassed: false,
+    },
+    assignedOfficer: 'Officer S. Kulkarni (Zone 4)',
+    updatedAt: '25m ago',
+  },
+  {
+    id: 'task-3',
+    vsuId: 'vsu-grn-5-02',
+    vsuIdentifier: 'DEMO-MH-MUM-0003-VSU-GRN-05-502',
+    verificationStatus: 'Under Review',
+    officerNotes: 'Setback Margin Check: Cantilever living terrace extends +1.8m toward boundary road green reserve line.',
+    checklistResults: {
+      manifold2d: true,
+      boundaryWithinBuilding: false,
+      verticalClearanceValid: true,
+      noVsuOverlap: true,
+      deedTolerancePassed: true,
+    },
+    assignedOfficer: 'Officer R. Deshmukh (Zone 4)',
+    updatedAt: '1h ago',
   },
 ];
 

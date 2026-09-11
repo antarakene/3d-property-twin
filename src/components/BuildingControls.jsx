@@ -15,6 +15,8 @@ export default function BuildingControls({
   onToggleLabels,
   viewMode,
   onToggleViewMode,
+  buildingName = 'Tower A',
+  totalFloors = 10,
 }) {
   return (
     <div className="hud-panel controls-hub">
@@ -52,16 +54,18 @@ export default function BuildingControls({
         <input
           type="range"
           min="0"
-          max="8"
+          max={totalFloors}
           value={activeFloorFilter ?? 0}
           onChange={(e) => setActiveFloorFilter(e.target.value === '0' ? null : Number(e.target.value))}
           className="floor-slider"
         />
         <div className="slider-ticks">
           <span>A</span>
-          {[2, 3, 4, 5, 6, 7, 8].map((n) => (
-            <span key={n}>{n}</span>
-          ))}
+          {Array.from({ length: totalFloors }, (_, i) => i + 1)
+            .filter((n) => n > 1)
+            .map((n) => (
+              <span key={n}>{n}</span>
+            ))}
         </div>
       </div>
 
@@ -69,7 +73,7 @@ export default function BuildingControls({
         <div className="section-label"><span>Actions</span></div>
         <div className="action-grid">
           <button className="btn-hud" onClick={onFlyToTower}>
-            🎯 Fly to Tower A
+            🎯 Fly to {buildingName}
           </button>
           <button
             className={`btn-hud ${isExploded ? 'btn-active' : ''}`}

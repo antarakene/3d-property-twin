@@ -25,18 +25,43 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   alertsCount = 0,
   pendingTasksCount = 0,
 }) => {
+  const isPublic = activeRole === 'public_demo';
+  const isSurveyor = activeRole === 'surveyor';
+  const isOfficer = activeRole === 'municipal_officer';
+  const isAdmin = activeRole === 'admin';
+
   return (
     <>
       <aside className="sidebar-nav">
         <div>
-          <div className="nav-section-label">Spatial Intelligence</div>
+          {/* Dynamic Section 1 Header */}
+          <div className="nav-section-label">
+            {isPublic
+              ? 'Citizen Services'
+              : isSurveyor
+              ? 'Field Surveyor Tools'
+              : isOfficer
+              ? 'Revenue & Enforcement'
+              : isAdmin
+              ? 'Master Spatial Admin'
+              : 'Spatial Intelligence'}
+          </div>
+
           <nav className="nav-list">
             <div
               className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
               onClick={() => onTabChange('dashboard')}
             >
               <span className="material-symbols-outlined">dashboard</span>
-              <span>Overview & KPIs</span>
+              <span>
+                {isPublic
+                  ? 'Overview & Search'
+                  : isSurveyor
+                  ? 'Surveyor Dashboard'
+                  : isOfficer
+                  ? 'Adjudication Dashboard'
+                  : 'Master Overview'}
+              </span>
             </div>
 
             <div
@@ -44,7 +69,15 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               onClick={() => onTabChange('city3d')}
             >
               <span className="material-symbols-outlined">location_city</span>
-              <span>3D City & Exploded View</span>
+              <span>
+                {isPublic
+                  ? '3D City Explorer'
+                  : isSurveyor
+                  ? '3D As-Built Twin'
+                  : isOfficer
+                  ? '3D Violation Audit'
+                  : '3D City & Exploded Twin'}
+              </span>
             </div>
 
             <div
@@ -52,22 +85,40 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               onClick={() => onTabChange('registry')}
             >
               <span className="material-symbols-outlined">table_view</span>
-              <span>Vertical Registry (VSUs)</span>
+              <span>
+                {isPublic
+                  ? 'Public Registry (VSUs)'
+                  : isOfficer
+                  ? 'Statutory Cadastre'
+                  : 'Vertical Registry (VSUs)'}
+              </span>
             </div>
           </nav>
 
+          {/* Dynamic Section 2 Header */}
           <div className="nav-section-label" style={{ marginTop: '14px' }}>
-            Workflows & Verification
+            {isPublic
+              ? 'Authority Workflows'
+              : isSurveyor
+              ? 'Field Data Collection'
+              : isOfficer
+              ? 'Statutory Approvals'
+              : 'Workflows & Verification'}
           </div>
+
           <nav className="nav-list">
+            {/* Register VSU */}
             <div
               className={`nav-item ${activeTab === 'register' ? 'active' : ''}`}
               onClick={() => onTabChange('register')}
             >
               <span className="material-symbols-outlined">add_box</span>
               <span>Register Candidate VSU</span>
+              {isSurveyor && <span className="nav-badge" style={{ background: '#d97706', color: '#fff' }}>+ Field</span>}
+              {isPublic && <span className="material-symbols-outlined" style={{ fontSize: '13px', color: 'var(--color-outline)', marginLeft: 'auto' }}>lock</span>}
             </div>
 
+            {/* Satellite & Survey Diffs */}
             <div
               className={`nav-item ${activeTab === 'discrepancies' ? 'active' : ''}`}
               onClick={() => onTabChange('discrepancies')}
@@ -75,18 +126,26 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               <span className="material-symbols-outlined">satellite_alt</span>
               <span>Satellite & Survey Diffs</span>
               {alertsCount > 0 && <span className="nav-badge alert">{alertsCount}</span>}
+              {isPublic && <span className="material-symbols-outlined" style={{ fontSize: '13px', color: 'var(--color-outline)', marginLeft: 'auto' }}>lock</span>}
             </div>
 
+            {/* Verification Queue */}
             <div
               className={`nav-item ${activeTab === 'verification' ? 'active' : ''}`}
               onClick={() => onTabChange('verification')}
             >
               <span className="material-symbols-outlined">fact_check</span>
               <span>Verification Queue</span>
-              {pendingTasksCount > 0 && <span className="nav-badge pending">{pendingTasksCount}</span>}
+              {pendingTasksCount > 0 && (
+                <span className="nav-badge pending" style={isOfficer ? { background: '#7c3aed', color: '#ffffff', fontWeight: 700 } : undefined}>
+                  {pendingTasksCount}
+                </span>
+              )}
+              {isPublic && <span className="material-symbols-outlined" style={{ fontSize: '13px', color: 'var(--color-outline)', marginLeft: 'auto' }}>lock</span>}
             </div>
           </nav>
 
+          {/* Emergency Section */}
           <div className="nav-section-label" style={{ marginTop: '14px' }}>
             Emergency Helper
           </div>
@@ -117,7 +176,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                 width: '7px',
                 height: '7px',
                 borderRadius: '50%',
-                background: 'var(--color-secondary)',
+                background: isPublic ? '#0284c7' : isSurveyor ? '#d97706' : isOfficer ? '#7c3aed' : '#059669',
                 display: 'inline-block',
               }}
             />
@@ -127,7 +186,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             EPSG:7760 • WGS84
           </div>
           <div style={{ marginTop: '4px', fontSize: '10px', color: 'var(--color-on-surface-variant)' }}>
-            Role: <strong>{activeRole.replace('_', ' ')}</strong>
+            Active: <strong style={{ color: isPublic ? '#0284c7' : isSurveyor ? '#d97706' : isOfficer ? '#7c3aed' : '#059669' }}>
+              {isPublic ? 'Public Explorer' : isSurveyor ? 'Authorized Surveyor' : isOfficer ? 'Municipal Officer' : isAdmin ? 'System Admin' : 'User'}
+            </strong>
           </div>
         </div>
       </aside>

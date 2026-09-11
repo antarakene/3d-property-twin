@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { cadastreService } from '../services/cadastreService';
-import type { Building, DiscrepancyAlert, ParentParcel, CandidateVsu } from '../types/cadastre';
+import type { Building, DiscrepancyAlert, ParentParcel, CandidateVsu, UserRole } from '../types/cadastre';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { MetricChip } from '../components/common/MetricChip';
 
@@ -8,11 +8,16 @@ interface DashboardViewProps {
   onNavigateTab: (tab: any) => void;
   onSelectBuilding: (buildingId: string) => void;
   onSelectVsu: (vsu: CandidateVsu) => void;
+  currentRole?: UserRole;
+  pendingTasksCount?: number;
 }
 
 export const DashboardView: React.FC<DashboardViewProps> = ({
   onNavigateTab,
   onSelectBuilding,
+  onSelectVsu,
+  currentRole = 'public_demo',
+  pendingTasksCount = 1,
 }) => {
   const [parcels, setParcels] = useState<ParentParcel[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -45,45 +50,223 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   const verifiedVsusCount = vsus.filter((v) => v.verificationStatus === 'Verified').length;
   const underReviewVsusCount = vsus.filter((v) => v.verificationStatus === 'Under Review').length;
 
+  const isPublic = currentRole === 'public_demo';
+  const isSurveyor = currentRole === 'surveyor';
+  const isOfficer = currentRole === 'municipal_officer';
+  const isAdmin = currentRole === 'admin';
+
   return (
     <div style={{ padding: '20px 24px', maxWidth: '1280px', margin: '0 auto' }}>
-      {/* Zone Title & Banner */}
+      {/* Zone Title & Banner - Role Adaptive */}
       <div
         style={{
           background: 'var(--color-surface-container-lowest)',
-          border: '1px solid var(--color-border)',
+          border: `1px solid ${isPublic ? '#38bdf844' : isSurveyor ? '#f59e0b44' : isOfficer ? '#818cf844' : '#34d39944'}`,
           borderRadius: 'var(--radius-lg)',
           padding: '20px',
           marginBottom: '20px',
           boxShadow: '0 1px 3px rgba(11, 31, 58, 0.04)',
+          position: 'relative',
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="status-badge verified">Demo Zone Active</span>
+              <span
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: isPublic ? 'rgba(2, 132, 199, 0.15)' : isSurveyor ? 'rgba(217, 119, 6, 0.15)' : isOfficer ? 'rgba(124, 58, 237, 0.15)' : 'rgba(5, 150, 105, 0.15)',
+                  color: isPublic ? '#0284c7' : isSurveyor ? '#d97706' : isOfficer ? '#7c3aed' : '#059669',
+                  fontFamily: 'var(--font-display)',
+                }}
+              >
+                {isPublic
+                  ? '🌐 Citizen Discovery Portal'
+                  : isSurveyor
+                  ? '📐 Field Cadastral Surveyor Console'
+                  : isOfficer
+                  ? '🏛️ Municipal Revenue & Enforcement Console'
+                  : '🛡️ System Administrator Master Console'}
+              </span>
               <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-outline)' }}>
                 EPSG:7760 • WGS84 UTM 43N
               </span>
             </div>
+
             <h1 style={{ fontFamily: 'var(--font-display)', fontSize: '20px', fontWeight: 700, color: 'var(--color-primary)', marginTop: '6px' }}>
-              Maharashtra Urban Demonstration Zone
+              {isPublic
+                ? 'Maharashtra Citizen 3D Land & Flat Registry Portal'
+                : isSurveyor
+                ? 'Field Cadastral Surveyor Workspace'
+                : isOfficer
+                ? 'Municipal Town Planning & Title Adjudication Console'
+                : 'System Administrator & Spatial DB Cockpit'}
             </h1>
             <p style={{ color: 'var(--color-on-surface-variant)', fontSize: '13px', marginTop: '2px' }}>
-              3D Vertical Cadastral Mapping, Candidate VSU Registration & Satellite Discrepancy Auditing
+              {isPublic
+                ? 'Verify your apartment 3D vertical spatial boundaries, check sanctioned vs actual building heights, and explore digital twins.'
+                : isSurveyor
+                ? 'MMS vehicle LiDAR ingestion, GPS boundary verification, and candidate VSU registration.'
+                : isOfficer
+                ? 'Enforce building bylaws, adjudicate satellite & LiDAR height discrepancies, and verify title deeds.'
+                : 'Master infrastructure control, PostGIS spatial database health, audit event trail, and role configuration.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <button className="btn-primary" onClick={() => onNavigateTab('city3d')}>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_city</span>
-              <span>Launch 3D Explorer</span>
-            </button>
-            <button className="btn-teal" onClick={() => onNavigateTab('register')}>
-              <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add_box</span>
-              <span>Register Candidate VSU</span>
-            </button>
+          {/* Role-Specific Action Buttons */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            {isPublic && (
+              <>
+                <button className="btn-primary" onClick={() => onNavigateTab('city3d')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_city</span>
+                  <span>Launch 3D Explorer</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('registry')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>table_view</span>
+                  <span>Public Property Registry</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('sos')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>emergency</span>
+                  <span>SOS Emergency</span>
+                </button>
+              </>
+            )}
+
+            {isSurveyor && (
+              <>
+                <button className="btn-teal" onClick={() => onNavigateTab('register')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add_box</span>
+                  <span>+ Register Field VSU</span>
+                </button>
+                <button className="btn-primary" onClick={() => onNavigateTab('city3d')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>straighten</span>
+                  <span>3D Field As-Built</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('discrepancies')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>satellite_alt</span>
+                  <span>LiDAR Diffs ({alerts.length})</span>
+                </button>
+              </>
+            )}
+
+            {isOfficer && (
+              <>
+                <button
+                  className="btn-primary"
+                  style={{ background: '#7c3aed', borderColor: '#7c3aed' }}
+                  onClick={() => onNavigateTab('verification')}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>fact_check</span>
+                  <span>Verification Queue ({pendingTasksCount} Pending)</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('city3d')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>find_in_page</span>
+                  <span>3D Violation Audit</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('discrepancies')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>warning</span>
+                  <span>Signals ({alerts.length})</span>
+                </button>
+              </>
+            )}
+
+            {isAdmin && (
+              <>
+                <button className="btn-primary" onClick={() => onNavigateTab('city3d')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>location_city</span>
+                  <span>3D Engine</span>
+                </button>
+                <button className="btn-teal" onClick={() => onNavigateTab('register')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>add_box</span>
+                  <span>Register VSU</span>
+                </button>
+                <button className="btn-secondary" onClick={() => onNavigateTab('verification')}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>admin_panel_settings</span>
+                  <span>Queue ({pendingTasksCount})</span>
+                </button>
+              </>
+            )}
           </div>
+        </div>
+
+        {/* Admin Infrastructure Health Strip */}
+        {isAdmin && (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '8px 12px',
+              background: 'rgba(5, 150, 105, 0.08)',
+              border: '1px solid rgba(5, 150, 105, 0.25)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '6px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+              <strong>PostgreSQL 15 / PostGIS 3.4:</strong> <span style={{ color: '#059669' }}>Connected & Healthy</span>
+            </div>
+            <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-outline)' }}>
+              Cesium Ion: Token Active • Spatial Datum: EPSG:7760 • Audit Trail: Immutable Append-Only
+            </div>
+          </div>
+        )}
+
+        {/* Citizen How-To Guidance Strip */}
+        {isPublic && (
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '8px 12px',
+              background: 'rgba(2, 132, 199, 0.08)',
+              border: '1px solid rgba(2, 132, 199, 0.2)',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              color: 'var(--color-on-surface)',
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '16px', color: '#0284c7' }}>info</span>
+            <span>
+              <strong>Citizen Tip:</strong> Search for your building below or enter your flat number (e.g. <code>901</code>) to inspect verified 3D vertical boundaries and sanctioned building heights.
+            </span>
+          </div>
+        )}
+
+        {/* SIH26011 National Problem Statement Alignment Strip */}
+        <div
+          style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            background: 'rgba(2, 132, 199, 0.05)',
+            border: '1px solid rgba(2, 132, 199, 0.2)',
+            borderRadius: 'var(--radius-sm)',
+            fontSize: '11px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '6px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontWeight: 800, color: '#0284c7', fontFamily: 'var(--font-mono)' }}>SIH26011:</span>
+            <span style={{ color: 'var(--color-on-surface)' }}>
+              <strong>3D ULPIN Generation & Vertical Property Mapping System</strong> • Ministry of Rural Development (Space Technology)
+            </span>
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: 'var(--color-outline)' }}>
+            DILRMP • Bhu-Aadhaar 3D Specification
+          </span>
         </div>
 
         {/* Quick Search Bar */}
@@ -105,7 +288,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             </span>
             <input
               type="text"
-              placeholder="Search by Demo ULPIN Reference (e.g. DEMO-MH-MUM-0001) or Candidate VSU ID..."
+              placeholder="Search by Demo ULPIN Reference (e.g. DEMO-MH-MUM-0001), building name, or candidate VSU ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
@@ -117,6 +300,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                 fontSize: '12px',
               }}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                style={{ background: 'none', border: 'none', color: 'var(--color-outline)', cursor: 'pointer' }}
+              >
+                ✕
+              </button>
+            )}
           </div>
           <button
             className="btn-secondary"
@@ -126,6 +317,30 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
             Fill Demo Parcel
           </button>
         </div>
+
+        {/* Search Results Preview for Candidate VSUs */}
+        {searchQuery && (
+          <div style={{ marginTop: '12px', padding: '10px 14px', background: 'var(--color-surface-container-low)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-outline)', marginBottom: '6px' }}>
+              Found {vsus.filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase())).length} candidate units matching &ldquo;{searchQuery}&rdquo;:
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {vsus
+                .filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase()))
+                .slice(0, 5)
+                .map(v => (
+                  <button
+                    key={v.id}
+                    className="btn-secondary"
+                    style={{ fontSize: '11px', padding: '4px 8px' }}
+                    onClick={() => onSelectVsu(v)}
+                  >
+                    🏢 Unit {v.unitNumber} ({v.useType}) • Inspect in 3D
+                  </button>
+                ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Metric Cards Grid */}
@@ -176,7 +391,17 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {buildings.map((bld) => (
+            {buildings
+              .filter((b) => {
+                if (!searchQuery) return true;
+                const q = searchQuery.toLowerCase();
+                return (
+                  b.buildingName.toLowerCase().includes(q) ||
+                  b.buildingCode.toLowerCase().includes(q) ||
+                  (b.status && b.status.toLowerCase().includes(q))
+                );
+              })
+              .map((bld) => (
               <div
                 key={bld.id}
                 style={{

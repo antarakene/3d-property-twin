@@ -129,44 +129,54 @@ class CadastreService {
 
   // 4. Fetch Candidate VSUs
   async getVsus(buildingId?: string, floorNumber?: number): Promise<CandidateVsu[]> {
+    let list: CandidateVsu[] = [];
     if (!isSupabaseConfigured) {
-      let list = SEED_VSUS;
-      if (buildingId) list = list.filter((v) => v.buildingId === buildingId);
-      if (floorNumber) list = list.filter((v) => v.floorNumber === floorNumber);
-      return list;
-    }
-    try {
-      let query = supabase.from('vertical_sub_units').select('*');
-      if (buildingId) query = query.eq('building_id', buildingId);
+      list = SEED_VSUS;
+    } else {
+      try {
+        let query = supabase.from('vertical_sub_units').select('*');
+        if (buildingId) query = query.eq('building_id', buildingId);
 
-      const { data, error } = await query;
-      if (error || !data || data.length === 0) return SEED_VSUS;
+        const { data, error } = await query;
+        if (!error && data && data.length > 0) {
+          const dbVsus: CandidateVsu[] = data.map((v: any) => ({
+            id: v.id,
+            buildingId: v.building_id,
+            floorId: v.floor_id,
+            floorNumber: parseInt(v.unit_number?.slice(0, -2) || '1', 10),
+            prototypeVsuIdentifier: v.prototype_vsu_identifier,
+            unitNumber: v.unit_number,
+            unitName: v.unit_name,
+            useType: v.use_type,
+            carpetAreaSqm: Number(v.carpet_area_sqm),
+            builtupAreaSqm: Number(v.builtup_area_sqm),
+            volumeCum: Number(v.volume_cum),
+            zBottomM: Number(v.z_bottom_m),
+            zTopM: Number(v.z_top_m),
+            confidenceTier: v.confidence_tier,
+            verificationStatus: v.verification_status,
+            mockDocumentReference: v.mock_document_reference,
+            mockOccupantName: v.mock_occupant_name,
+            quadrantCode: v.quadrant_code,
+            hasViolation: v.unit_number === '602' || v.verification_status === 'Conflict' || v.verification_status === 'Draft',
+            geometry: v.geometry,
+          }));
 
-      return data.map((v: any) => ({
-        id: v.id,
-        buildingId: v.building_id,
-        floorId: v.floor_id,
-        floorNumber: parseInt(v.unit_number.slice(0, -2) || '1', 10),
-        prototypeVsuIdentifier: v.prototype_vsu_identifier,
-        unitNumber: v.unit_number,
-        unitName: v.unit_name,
-        useType: v.use_type,
-        carpetAreaSqm: Number(v.carpet_area_sqm),
-        builtupAreaSqm: Number(v.builtup_area_sqm),
-        volumeCum: Number(v.volume_cum),
-        zBottomM: Number(v.z_bottom_m),
-        zTopM: Number(v.z_top_m),
-        confidenceTier: v.confidence_tier,
-        verificationStatus: v.verification_status,
-        mockDocumentReference: v.mock_document_reference,
-        mockOccupantName: v.mock_occupant_name,
-        quadrantCode: v.quadrant_code,
-        hasViolation: v.verification_status === 'Draft' && v.unit_number === '602',
-        geometry: v.geometry,
-      }));
-    } catch {
-      return SEED_VSUS;
+          // Merge with SEED_VSUS for any buildings not yet persisted to DB
+          const dbBuildingIds = new Set(dbVsus.map((v) => v.buildingId));
+          const complementary = SEED_VSUS.filter((v) => !dbBuildingIds.has(v.buildingId));
+          list = [...dbVsus, ...complementary];
+        } else {
+          list = SEED_VSUS;
+        }
+      } catch {
+        list = SEED_VSUS;
+      }
     }
+
+    if (buildingId) list = list.filter((v) => v.buildingId === buildingId);
+    if (floorNumber) list = list.filter((v) => v.floorNumber === floorNumber);
+    return list;
   }
 
   // 5. Fetch Single VSU by ID or Identifier

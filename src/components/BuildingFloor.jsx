@@ -2,11 +2,12 @@ import React from 'react';
 import { Entity } from 'resium';
 import { Cartesian3, Color } from 'cesium';
 import VSU from './VSU';
+import { isVsuMatch } from '../data/buildingData';
 
 export default function BuildingFloor({
   floor,
   coordinates,
-  explodedOffset,
+  explodedOffset = 0,
   selectedVsu,
   hoveredVsuId,
   isFloorSelected,
@@ -17,49 +18,68 @@ export default function BuildingFloor({
   onSelectVsu,
   onHoverVsu,
   onSelectFloor,
+  footprintWidthM = 28.0,
+  footprintLengthM = 28.0,
+  unitsPerFloor = 4,
+  colorTheme = {
+    slab: '#334155',
+    glazing: '#38bdf8',
+    highlight: '#0284c7',
+  },
 }) {
-  const { longitude: lon, latitude: lat } = coordinates;
+  const { longitude: lon, latitude: lat, altitude = 0.0 } = coordinates;
   const slabThickness = 0.28;
-  const baseSlabElevation = floor.zBottom + explodedOffset;
-  const topCeilingElevation = floor.zTop + explodedOffset;
+  const baseSlabElevation = altitude + floor.zBottom + explodedOffset;
+  const topCeilingElevation = altitude + floor.zTop + explodedOffset;
 
-  // Structural Floor Slab Footprint (28m x 28m)
+  const cosLat = Math.cos((lat * Math.PI) / 180);
+  const halfW = (footprintWidthM / 2) / (111320 * cosLat);
+  const halfL = (footprintLengthM / 2) / 110540;
+
+  // Structural Floor Slab Footprint
   const slabHierarchy = Cartesian3.fromDegreesArray([
-    lon - 0.00017, lat - 0.00017,
-    lon + 0.00017, lat - 0.00017,
-    lon + 0.00017, lat + 0.00017,
-    lon - 0.00017, lat + 0.00017,
+    lon - halfW, lat - halfL,
+    lon + halfW, lat - halfL,
+    lon + halfW, lat + halfL,
+    lon - halfW, lat + halfL,
   ]);
 
   // Central Core: Protected Fire Stairwell & Elevator Shaft
+  const coreHalfW = halfW * 0.22;
+  const coreHalfL = halfL * 0.22;
   const coreHierarchy = Cartesian3.fromDegreesArray([
-    lon - 0.000035, lat - 0.000035,
-    lon + 0.000035, lat - 0.000035,
-    lon + 0.000035, lat + 0.000035,
-    lon - 0.000035, lat + 0.000035,
+    lon - coreHalfW, lat - coreHalfL,
+    lon + coreHalfW, lat - coreHalfL,
+    lon + coreHalfW, lat + coreHalfL,
+    lon - coreHalfW, lat + coreHalfL,
   ]);
 
   // Structural Corner Columns
+  const colW = halfW * 0.1;
+  const colL = halfL * 0.1;
   const columnPositions = [
-    [-0.00016, -0.00016],
-    [0.00014, -0.00016],
-    [0.00014, 0.00014],
-    [-0.00016, 0.00014],
+    [-halfW * 0.95, -halfL * 0.95],
+    [halfW * 0.95 - colW, -halfL * 0.95],
+    [halfW * 0.95 - colW, halfL * 0.95 - colL],
+    [-halfW * 0.95, halfL * 0.95 - colL],
   ];
+
+  const glazingColor = Color.fromCssColorString(colorTheme.glazing || '#38bdf8');
+  const slabColor = Color.fromCssColorString(colorTheme.slab || '#334155');
 
   return (
     <>
       {/* 1. Reinforced Floor Slab (Cast-in-place Concrete Look) */}
       <Entity
         name={`Floor ${floor.floorNumber} Slab`}
-        onClick={() => onSelectFloor(floor)}
+        onClick={() => onSelectFloor && onSelectFloor(floor)}
         polygon={{
           hierarchy: slabHierarchy,
           height: baseSlabElevation,
           extrudedHeight: baseSlabElevation + slabThickness,
           material: isFloorSelected
             ? Color.fromCssColorString('#f59e0b') // Highlighted Floor
-            : Color.fromCssColorString('#334155'), // Architectural Charcoal Slab
+            : slabColor,
           outline: true,
           outlineColor: Color.fromCssColorString('#0f172a'),
         }}
@@ -73,9 +93,9 @@ export default function BuildingFloor({
           polygon={{
             hierarchy: Cartesian3.fromDegreesArray([
               lon + cLon, lat + cLat,
-              lon + cLon + 0.000018, lat + cLat,
-              lon + cLon + 0.000018, lat + cLat + 0.000018,
-              lon + cLon, lat + cLat + 0.000018,
+              lon + cLon + colW, lat + cLat,
+              lon + cLon + colW, lat + cLat + colL,
+              lon + cLon, lat + cLat + colL,
             ]),
             height: baseSlabElevation + slabThickness,
             extrudedHeight: topCeilingElevation,
@@ -101,40 +121,40 @@ export default function BuildingFloor({
         }}
       />
 
-      {/* 4. Exterior Architectural Glass Facade */}
+      {/* 4. Ceiling Architectural Band (Sleek edge beam, non-blocking) */}
       <Entity
-        name={`Floor ${floor.floorNumber} Facade Glazing`}
+        name={`Floor ${floor.floorNumber} Ceiling Band`}
         polygon={{
           hierarchy: slabHierarchy,
-          height: baseSlabElevation + slabThickness,
+          height: topCeilingElevation - 0.12,
           extrudedHeight: topCeilingElevation,
-          material: isEmergencyMode
-            ? Color.fromCssColorString('#ef4444').withAlpha(0.06)
-            : transparencyMode
-            ? Color.fromCssColorString('#38bdf8').withAlpha(0.04)
-            : Color.fromCssColorString('#38bdf8').withAlpha(0.12),
+          material: slabColor.withAlpha(0.6),
           outline: true,
-          outlineColor: Color.fromCssColorString('#38bdf8').withAlpha(0.35),
+          outlineColor: glazingColor.withAlpha(0.4),
         }}
       />
 
-      {/* 5. 4 Individual Volumetric Units */}
-      {floor.vsus.map((vsu) => (
-        <VSU
-          key={vsu.id}
-          vsu={vsu}
-          coordinates={coordinates}
-          explodedOffset={explodedOffset}
-          isSelected={selectedVsu?.id === vsu.id}
-          isHovered={hoveredVsuId === vsu.id}
-          transparencyMode={transparencyMode}
-          isEmergencyMode={isEmergencyMode}
-          isAuditMode={isAuditMode}
-          showLabels={showLabels}
-          onSelect={onSelectVsu}
-          onHover={onHoverVsu}
-        />
-      ))}
+      {/* 5. Individual Volumetric Units (Directly interactive) */}
+      {floor.vsus &&
+        floor.vsus.map((vsu) => (
+          <VSU
+            key={vsu.id}
+            vsu={vsu}
+            coordinates={coordinates}
+            explodedOffset={explodedOffset}
+            isSelected={isVsuMatch(selectedVsu, vsu)}
+            isHovered={hoveredVsuId === vsu.id}
+            transparencyMode={transparencyMode}
+            isEmergencyMode={isEmergencyMode}
+            isAuditMode={isAuditMode}
+            showLabels={showLabels}
+            footprintWidthM={footprintWidthM}
+            footprintLengthM={footprintLengthM}
+            unitsPerFloor={unitsPerFloor}
+            onSelect={onSelectVsu}
+            onHover={onHoverVsu}
+          />
+        ))}
     </>
   );
 }

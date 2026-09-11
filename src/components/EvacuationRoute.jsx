@@ -1,6 +1,6 @@
 import React from 'react';
 import { Entity } from 'resium';
-import { Cartesian3, Color, PolylineGlowMaterialProperty } from 'cesium';
+import { Cartesian2, Cartesian3, Color, PolylineGlowMaterialProperty } from 'cesium';
 
 export default function EvacuationRoute({ pathWaypoints, isActive }) {
   if (!isActive || !pathWaypoints || pathWaypoints.length < 2) return null;
@@ -41,7 +41,7 @@ export default function EvacuationRoute({ pathWaypoints, isActive }) {
           outlineColor: Color.WHITE,
           outlineWidth: 2,
           verticalOrigin: 1,
-          pixelOffset: new Cartesian3(0, -20, 0),
+          pixelOffset: new Cartesian2(0, -20),
         }}
       />
 
@@ -61,7 +61,7 @@ export default function EvacuationRoute({ pathWaypoints, isActive }) {
           outlineColor: Color.BLACK,
           outlineWidth: 2,
           verticalOrigin: 1,
-          pixelOffset: new Cartesian3(0, -20, 0),
+          pixelOffset: new Cartesian2(0, -20),
         }}
       />
     </>

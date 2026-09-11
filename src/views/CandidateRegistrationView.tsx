@@ -28,6 +28,7 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
   const [confidenceTier, setConfidenceTier] = useState('Tier A');
   const [submitting, setSubmitting] = useState(false);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -41,10 +42,26 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
     load();
   }, []);
 
-  const generatedIdentifier = `DEMO-MH-MUM-0001-VSU-A-${String(floorNumber).padStart(2, '0')}-${unitNumber}`;
-  const calculatedVolume = (builtupArea * 3.4).toFixed(1);
-  const zBottom = 1.2 + (floorNumber - 1) * 3.4;
-  const zTop = zBottom + 3.4;
+  const currentBuilding = buildings.find((b) => b.id === selectedBuildingId) || buildings[0];
+  const currentParcel = parcels.find((p) => p.id === (currentBuilding?.parcelId || selectedParcelId)) || parcels[0];
+  const bldCode = currentBuilding?.buildingCode ? currentBuilding.buildingCode.replace(/[^A-Z0-9]/g, '') : 'A';
+  const parcelRef = currentParcel?.demoUlpinReference || 'DEMO-MH-MUM-0001';
+  const maxFloor = currentBuilding?.totalFloors || 10;
+  const storyHeight = currentBuilding ? (currentBuilding.heightM / currentBuilding.totalFloors) : 3.4;
+  const podiumHeight = 1.2;
+
+  const generatedIdentifier = `${parcelRef}-VSU-${bldCode}-${String(floorNumber).padStart(2, '0')}-${unitNumber}`;
+  const calculatedVolume = (builtupArea * storyHeight).toFixed(1);
+  const zBottom = podiumHeight + (floorNumber - 1) * storyHeight;
+  const zTop = zBottom + storyHeight;
+  const zRangeStr = `Z${zBottom.toFixed(1)}_${zTop.toFixed(1)}`;
+  const canonical3dUlpin = `ULPIN3D-MH-${currentParcel?.surveyNumber ? currentParcel.surveyNumber.replace(/[^A-Z0-9]/g, '') : 'MUM01'}-${bldCode}-F${String(floorNumber).padStart(2, '0')}-U${unitNumber}-${zRangeStr}`;
+
+  const handleCopyUlpin = () => {
+    navigator.clipboard.writeText(canonical3dUlpin);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,11 +93,27 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
       <div className="instrument-card">
         <div className="card-header">
           <div>
-            <h1 className="card-title" style={{ fontSize: '18px' }}>
-              Candidate Vertical Sub-Unit (VSU) Registration
-            </h1>
-            <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: '2px' }}>
-              Draft a vertical cadastral unit record and submit for authorized surveyor verification
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <h1 className="card-title" style={{ fontSize: '18px' }}>
+                3D ULPIN Generation & Candidate VSU Registration
+              </h1>
+              <span
+                style={{
+                  fontSize: '10px',
+                  fontWeight: 700,
+                  padding: '2px 8px',
+                  borderRadius: '12px',
+                  background: 'rgba(2, 132, 199, 0.15)',
+                  color: '#0284c7',
+                  border: '1px solid rgba(2, 132, 199, 0.3)',
+                  fontFamily: 'var(--font-mono)',
+                }}
+              >
+                SIH26011 • Space Technology
+              </span>
+            </div>
+            <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)', marginTop: '3px' }}>
+              Ministry of Rural Development • Algorithmic 3D Bhu-Aadhaar synthesis for vertical properties
             </p>
           </div>
           <span className="status-badge draft">Draft Submission</span>
@@ -100,34 +133,121 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
               check_circle
             </span>
             <h3 style={{ fontSize: '16px', color: 'var(--color-verified)', marginTop: '8px' }}>
-              Candidate VSU Record Created Successfully!
+              Candidate VSU & 3D ULPIN Created Successfully!
             </h3>
-            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, margin: '8px 0' }}>
+            <p style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700, color: 'var(--color-primary)', margin: '8px 0' }}>
               {submittedId}
             </p>
+            <div
+              style={{
+                display: 'inline-block',
+                background: 'rgba(5, 150, 105, 0.1)',
+                border: '1px solid rgba(5, 150, 105, 0.3)',
+                padding: '4px 12px',
+                borderRadius: 'var(--radius-sm)',
+                fontFamily: 'var(--font-mono)',
+                fontSize: '11px',
+                color: '#059669',
+                marginBottom: '8px',
+              }}
+            >
+              Statutory Canonical 3D ULPIN: {canonical3dUlpin}
+            </div>
             <p style={{ fontSize: '12px', color: 'var(--color-on-surface-variant)' }}>
               Linked to Demo Parent Parcel Reference. Routing to Surveyor Verification Queue...
             </p>
           </div>
         ) : (
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {/* Generated Identifier Box */}
+            {/* Live 3D ULPIN Algorithmic Generator Engine Box */}
             <div
               style={{
                 background: 'var(--color-surface-container)',
-                padding: '12px 16px',
-                borderRadius: 'var(--radius-sm)',
-                borderLeft: '4px solid var(--color-secondary)',
+                padding: '16px',
+                borderRadius: 'var(--radius-md)',
+                border: '1px solid rgba(2, 132, 199, 0.3)',
+                boxShadow: '0 2px 6px rgba(2, 132, 199, 0.06)',
               }}
             >
-              <div style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', color: 'var(--color-on-secondary-container)', fontWeight: 700, textTransform: 'uppercase' }}>
-                Generated Prototype VSU Identifier
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px', color: '#0284c7' }}>
+                    token
+                  </span>
+                  <span style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--color-primary)', fontWeight: 700, textTransform: 'uppercase' }}>
+                    Live 3D-ULPIN Algorithmic Synthesis (SIH26011)
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleCopyUlpin}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '3px 8px',
+                    fontSize: '11px',
+                    fontFamily: 'var(--font-mono)',
+                    background: copied ? 'var(--color-verified-bg)' : 'var(--color-surface-container-high)',
+                    border: `1px solid ${copied ? 'var(--color-verified)' : 'var(--color-border)'}`,
+                    color: copied ? 'var(--color-verified)' : 'var(--color-on-surface)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                    {copied ? 'check' : 'content_copy'}
+                  </span>
+                  <span>{copied ? 'Copied 3D ULPIN!' : 'Copy 3D ULPIN'}</span>
+                </button>
               </div>
-              <div style={{ fontFamily: 'var(--font-mono)', fontSize: '14px', fontWeight: 700, color: 'var(--color-primary)', marginTop: '2px' }}>
-                {generatedIdentifier}
+
+              {/* Canonical 3D ULPIN Code String */}
+              <div
+                style={{
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '15px',
+                  fontWeight: 800,
+                  color: '#0284c7',
+                  background: 'rgba(2, 132, 199, 0.08)',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid rgba(2, 132, 199, 0.25)',
+                  wordBreak: 'break-all',
+                  letterSpacing: '0.3px',
+                }}
+              >
+                {canonical3dUlpin}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--color-outline)', marginTop: '2px' }}>
-                Calculated MSL Extrusion: {zBottom.toFixed(1)}m – {zTop.toFixed(1)}m (Height: 3.4m, Volume: {calculatedVolume} m³)
+
+              {/* Decomposed Syntax Chips */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '10px' }}>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'var(--color-surface-container-high)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <strong>Scheme:</strong> ULPIN3D-MH
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'var(--color-surface-container-high)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <strong>2D Parcel:</strong> {parcelRef}
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'var(--color-surface-container-high)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <strong>Structure:</strong> {currentBuilding?.buildingName} ({bldCode})
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'var(--color-surface-container-high)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <strong>Floor:</strong> F{String(floorNumber).padStart(2, '0')}
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'var(--color-surface-container-high)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--color-border)' }}>
+                  <strong>Unit:</strong> U{unitNumber}
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'rgba(217, 119, 6, 0.1)', color: '#d97706', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(217, 119, 6, 0.3)' }}>
+                  <strong>Elevation:</strong> {zBottom.toFixed(1)}m – {zTop.toFixed(1)}m MSL
+                </span>
+                <span style={{ fontSize: '10px', fontFamily: 'var(--font-mono)', background: 'rgba(5, 150, 105, 0.1)', color: '#059669', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(5, 150, 105, 0.3)' }}>
+                  <strong>Volume:</strong> {calculatedVolume} m³
+                </span>
+              </div>
+
+              {/* Prototype VSU Sub-Identifier */}
+              <div style={{ fontSize: '11px', color: 'var(--color-outline)', marginTop: '8px', fontFamily: 'var(--font-mono)' }}>
+                Prototype VSU Link: <code>{generatedIdentifier}</code> • Story Height: {storyHeight.toFixed(1)}m
               </div>
             </div>
 
@@ -159,7 +279,14 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
                 <label className="metric-label">Target Vertical Building</label>
                 <select
                   value={selectedBuildingId}
-                  onChange={(e) => setSelectedBuildingId(e.target.value)}
+                  onChange={(e) => {
+                    const newBId = e.target.value;
+                    setSelectedBuildingId(newBId);
+                    const b = buildings.find((x) => x.id === newBId);
+                    if (b && floorNumber > b.totalFloors) {
+                      setFloorNumber(b.totalFloors);
+                    }
+                  }}
                   style={{
                     width: '100%',
                     padding: '8px',
@@ -171,7 +298,7 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
                 >
                   {buildings.map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.buildingName} ({b.buildingCode})
+                      {b.buildingName} ({b.buildingCode}) • {b.totalFloors} Floors
                     </option>
                   ))}
                 </select>
@@ -199,13 +326,13 @@ export const CandidateRegistrationView: React.FC<CandidateRegistrationViewProps>
             {/* Floor & Unit Number */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '14px' }}>
               <div>
-                <label className="metric-label">Floor Elevation Number</label>
+                <label className="metric-label">Floor Elevation Number (1 to {maxFloor})</label>
                 <input
                   type="number"
                   min="1"
-                  max="12"
+                  max={maxFloor}
                   value={floorNumber}
-                  onChange={(e) => setFloorNumber(Number(e.target.value))}
+                  onChange={(e) => setFloorNumber(Math.min(maxFloor, Math.max(1, Number(e.target.value))))}
                   style={{
                     width: '100%',
                     padding: '8px',

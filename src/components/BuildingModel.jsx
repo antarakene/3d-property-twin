@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Entity } from 'resium';
 import { Cartesian3, Color, DistanceDisplayCondition, NearFarScalar } from 'cesium';
-import { SITE_COORDINATES, ARCHITECTURAL_VIOLATIONS, STATUS_CONFIG } from '../data/buildingData';
+import { SITE_COORDINATES, ARCHITECTURAL_VIOLATIONS, STATUS_CONFIG, isVsuMatch } from '../data/buildingData';
 
 const MODEL_URL = '/models/building.glb';
 
@@ -67,10 +67,10 @@ export default function BuildingModel({
       {/* ===== Interactive 3D-ULPIN DATA OVERLAYS (kept on top) ===== */}
 
       {/* Translucent VSU volume shells + labels for unit selection */}
-      {floors.map((floor) => {
-        const baseOffset = floor.zBottom;
+      {(floors || []).map((floor) => {
+        const baseOffset = floor.zBottom || 1.2;
 
-        return floor.vsus.map((vsu) => {
+        return (floor.vsus || []).map((vsu) => {
           const quad = vsu.unitNumber.slice(-1);
           const q = quadOffsets[quad] || quadOffsets["1"];
           const statusDef = STATUS_CONFIG[vsu.status] || STATUS_CONFIG.Verified;
@@ -83,7 +83,7 @@ export default function BuildingModel({
             lon + q.dLon[0], lat + q.dLat[1],
           ]);
 
-          const isSelected = selectedVsu?.id === vsu.id;
+          const isSelected = isVsuMatch(selectedVsu, vsu);
           const isHovered = hoveredVsuId === vsu.id;
 
           const alpha = isSelected ? 0.85 : isHovered ? 0.75 : transparencyMode ? 0.3 : 0.35;
