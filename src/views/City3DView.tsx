@@ -516,30 +516,27 @@ export const City3DView: React.FC<City3DViewProps> = ({
             className={
               activeBuilding.code === 'TOWER-A'
                 ? (viewMode === 'interactive' ? 'btn-secondary' : 'btn-teal')
-                : 'btn-teal'
+                : (viewMode === 'interactive' && !isExploded ? 'btn-teal' : 'btn-secondary')
             }
             style={{ fontSize: '11px', padding: '6px 8px', justifyContent: 'center' }}
             onClick={() => {
               if (activeBuilding.code === 'TOWER-A') {
                 setViewMode(viewMode === 'interactive' ? 'model' : 'interactive');
               } else {
-                // For procedural twins, toggle floor isolation or exploded view
-                if (effectiveFloorFilter) {
-                  setActiveFloorFilter(null);
-                } else if (activeVsu?.floorNumber) {
-                  setActiveFloorFilter(activeVsu.floorNumber);
-                } else {
-                  setIsExploded(!isExploded);
-                }
+                // Ensure standard procedural twin view: active procedural mode, unexploded, all floors
+                setViewMode('interactive');
+                setIsExploded(false);
+                setActiveFloorFilter(null);
+                handleFlyToActiveBuilding();
               }
             }}
             title={
               activeBuilding.code === 'TOWER-A'
                 ? 'Toggle between Procedural Cadastre and Photorealistic GLB Model'
-                : 'Interactive Procedural Twin Active (Click to toggle floor isolate or exploded view)'
+                : 'Reset to Standard Procedural Twin View (Unexploded, All Floors)'
             }
           >
-            🏢 {activeBuilding.code === 'TOWER-A' ? (viewMode === 'interactive' ? '3D Model' : 'Procedural') : 'Procedural Twin'}
+            🏛️ {activeBuilding.code === 'TOWER-A' ? (viewMode === 'interactive' ? '3D Model' : 'Procedural Twin') : 'Procedural Twin'}
           </button>
         </div>
       </div>
