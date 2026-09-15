@@ -7,6 +7,7 @@ import {
   Math as CesiumMath,
   CameraEventType,
   HeadingPitchRange,
+  DirectionalLight,
 } from 'cesium';
 import BuildingTwin from './BuildingTwin';
 import BuildingModel from './BuildingModel';
@@ -49,14 +50,33 @@ export default function CesiumViewer({
     const viewer = viewerRef.current.cesiumElement;
     const scene = viewer.scene;
 
-    // 1. Cancel default earth visuals for architectural studio mode
-    scene.globe.show = false;
+    // 1. Architectural CAD studio dark mode (keep globe ON so entity polygons render)
+    scene.globe.show = true;
+    scene.globe.baseColor = Color.fromCssColorString('#0b101b');
+    scene.globe.showGroundAtmosphere = false;
+    scene.globe.enableLighting = false;
+    scene.globe.depthTestAgainstTerrain = false;
+
+    // Remove default satellite imagery so scene is a clean, sleek dark canvas
+    try {
+      scene.imageryLayers.removeAll();
+    } catch {
+      // safe fallback
+    }
+
     if (scene.skyBox) scene.skyBox.show = false;
     if (scene.sun) scene.sun.show = false;
     if (scene.moon) scene.moon.show = false;
     if (scene.skyAtmosphere) scene.skyAtmosphere.show = false;
 
     scene.backgroundColor = Color.fromCssColorString('#0b101b');
+
+    // Constant architectural directional light for crisp 3D model shading
+    scene.light = new DirectionalLight({
+      direction: new Cartesian3(0.5, 0.5, -1.0),
+      color: Color.WHITE,
+      intensity: 1.5,
+    });
 
     // 2. CAD-style Orbit Controls
     const controller = scene.screenSpaceCameraController;

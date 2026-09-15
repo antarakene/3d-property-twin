@@ -63,8 +63,8 @@ export default function ParcelLayer() {
         name="Maharashtra Demo Cadastre Base"
         polygon={{
           hierarchy: masterPlotHierarchy,
-          height: -0.3,
-          extrudedHeight: 0.0,
+          height: 0.0,
+          extrudedHeight: 0.1,
           material: Color.fromCssColorString('#0b1329'),
           outline: true,
           outlineColor: Color.fromCssColorString('#1e3a8a').withAlpha(0.6),
@@ -79,8 +79,8 @@ export default function ParcelLayer() {
           name={p.name}
           polygon={{
             hierarchy: Cartesian3.fromDegreesArray(p.poly),
-            height: -0.05,
-            extrudedHeight: 0.0,
+            height: 0.1,
+            extrudedHeight: 0.2,
             material: Color.fromCssColorString('#1e293b'),
             outline: true,
             outlineColor: Color.fromCssColorString(p.color).withAlpha(0.85),
@@ -94,8 +94,8 @@ export default function ParcelLayer() {
         name="18m Civic Demonstration Avenue"
         polygon={{
           hierarchy: mainRoadHierarchy,
-          height: 0.01,
-          extrudedHeight: 0.03,
+          height: 0.2,
+          extrudedHeight: 0.25,
           material: Color.fromCssColorString('#0f172a'),
           outline: true,
           outlineColor: Color.fromCssColorString('#38bdf8').withAlpha(0.5),
@@ -105,8 +105,8 @@ export default function ParcelLayer() {
         name="12m Connecting Arterial Road"
         polygon={{
           hierarchy: crossRoadHierarchy,
-          height: 0.01,
-          extrudedHeight: 0.03,
+          height: 0.2,
+          extrudedHeight: 0.25,
           material: Color.fromCssColorString('#0f172a'),
           outline: true,
           outlineColor: Color.fromCssColorString('#38bdf8').withAlpha(0.5),

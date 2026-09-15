@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { cadastreService, VSU_ULPIN_REGISTRY } from '../services/cadastreService';
 import { SEED_VSUS } from '../data/seedData';
 import type { VerificationTask, CandidateVsu, UserRole, AuditEvent } from '../types/cadastre';

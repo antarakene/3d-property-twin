@@ -178,7 +178,10 @@ class CadastreService {
 
         const { data, error } = await query.order('created_at', { ascending: false });
         if (!error && data && data.length > 0) {
-          const dbVsus: CandidateVsu[] = data.map((v: any) => {
+          const cleanData = data.filter(
+            (v: any) => !v.prototype_vsu_identifier?.includes('DEMO-TEST-UNIT')
+          );
+          const dbVsus: CandidateVsu[] = cleanData.map((v: any) => {
             // Robust floor number parsing
             let floorNum = 1;
             const match = v.prototype_vsu_identifier?.match(/-(?:F)?(\d{2})-/i);
@@ -425,7 +428,9 @@ class CadastreService {
       const localVsuTaskMap = new Map(SEED_TASKS.map((t) => [t.vsuId, t]));
       const localProtoTaskMap = new Map(SEED_TASKS.map((t) => [t.vsuIdentifier, t]));
 
-      const dbTasks: VerificationTask[] = data.map((t: any) => {
+      const dbTasks: VerificationTask[] = data
+        .filter((t: any) => !t.vertical_sub_units?.prototype_vsu_identifier?.includes('DEMO-TEST-UNIT'))
+        .map((t: any) => {
         const protoIdent = t.vertical_sub_units?.prototype_vsu_identifier;
         const local = localTaskMap.get(t.id) || localVsuTaskMap.get(t.vsu_id) || (protoIdent ? localProtoTaskMap.get(protoIdent) : undefined);
         return {

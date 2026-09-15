@@ -149,65 +149,71 @@ async function runBackendTests() {
     assert(insertedVsu?.prototype_vsu_identifier === testIdentifier, 'Inserted VSU retrieved with matching identifier');
 
     if (insertedVsu?.id) {
-      // Create verification task for test VSU
-      const { data: newTask, error: taskErr } = await supabase
-        .from('verification_tasks')
-        .insert({
-          vsu_id: insertedVsu.id,
-          verification_status: 'Under Review',
-          assigned_officer: 'Officer Test Inspector (Zone 4)',
-          officer_notes: 'Automated test initial review',
-          checklist_results: {
-            pointCloudMatch: true,
-            blueprintMatch: true,
-            setbackCompliant: true,
-            documentValid: true
-          }
-        })
-        .select()
-        .single();
+      let newTask = null;
+      try {
+        // Create verification task for test VSU
+        const { data: createdTask, error: taskErr } = await supabase
+          .from('verification_tasks')
+          .insert({
+            vsu_id: insertedVsu.id,
+            verification_status: 'Under Review',
+            assigned_officer: 'Officer Test Inspector (Zone 4)',
+            officer_notes: 'Automated test initial review',
+            checklist_results: {
+              pointCloudMatch: true,
+              blueprintMatch: true,
+              setbackCompliant: true,
+              documentValid: true
+            }
+          })
+          .select()
+          .single();
 
-      assert(!taskErr, `Create verification task: ${taskErr ? taskErr.message : 'OK'}`);
-      assert(newTask?.verification_status === 'Under Review', 'Task initialized in Under Review status');
+        newTask = createdTask;
+        assert(!taskErr, `Create verification task: ${taskErr ? taskErr.message : 'OK'}`);
+        assert(newTask?.verification_status === 'Under Review', 'Task initialized in Under Review status');
 
-      // Update task to Approved
-      const { data: updatedTask, error: updateErr } = await supabase
-        .from('verification_tasks')
-        .update({
-          verification_status: 'Approved',
-          officer_notes: 'Approved via Automated Test Pipeline'
-        })
-        .eq('id', newTask.id)
-        .select()
-        .single();
+        // Update task to Approved
+        const { data: updatedTask, error: updateErr } = await supabase
+          .from('verification_tasks')
+          .update({
+            verification_status: 'Approved',
+            officer_notes: 'Approved via Automated Test Pipeline'
+          })
+          .eq('id', newTask.id)
+          .select()
+          .single();
 
-      assert(!updateErr, `Update verification task to Approved: ${updateErr ? updateErr.message : 'OK'}`);
-      assert(updatedTask?.verification_status === 'Approved', 'Task status successfully updated to Approved');
+        assert(!updateErr, `Update verification task to Approved: ${updateErr ? updateErr.message : 'OK'}`);
+        assert(updatedTask?.verification_status === 'Approved', 'Task status successfully updated to Approved');
 
-      // Append Audit Event
-      const { data: auditEvent, error: auditErr } = await supabase
-        .from('audit_events')
-        .insert({
-          vsu_id: insertedVsu.id,
-          event_title: 'Automated Test Unit Verification Completed',
-          event_type: 'TEST_VERIFY',
-          performed_by: 'Automated Test Runner',
-          user_role: 'municipal_officer',
-          description: 'Candidate unit verified in automated test run.'
-        })
-        .select()
-        .single();
+        // Append Audit Event
+        const { data: auditEvent, error: auditErr } = await supabase
+          .from('audit_events')
+          .insert({
+            vsu_id: insertedVsu.id,
+            event_title: 'Automated Test Unit Verification Completed',
+            event_type: 'TEST_VERIFY',
+            performed_by: 'Automated Test Runner',
+            user_role: 'municipal_officer',
+            description: 'Candidate unit verified in automated test run.'
+          })
+          .select()
+          .single();
 
-      assert(!auditErr, `Append audit event to immutable log: ${auditErr ? auditErr.message : 'OK'}`);
-      assert(auditEvent?.user_role === 'municipal_officer', 'Audit record tagged with municipal_officer role');
+        assert(!auditErr, `Append audit event to immutable log: ${auditErr ? auditErr.message : 'OK'}`);
+        assert(auditEvent?.user_role === 'municipal_officer', 'Audit record tagged with municipal_officer role');
+      } finally {
+        // Explicitly cleanup test task, audit, and candidate VSU
+        await supabase.from('verification_tasks').delete().eq('vsu_id', insertedVsu.id);
+        await supabase.from('audit_events').delete().eq('vsu_id', insertedVsu.id);
+        const { error: delErr } = await supabase
+          .from('vertical_sub_units')
+          .delete()
+          .eq('id', insertedVsu.id);
 
-      // Cleanup test VSU (cascade deletes test task & test audit)
-      const { error: delErr } = await supabase
-        .from('vertical_sub_units')
-        .delete()
-        .eq('id', insertedVsu.id);
-
-      assert(!delErr, 'Clean up test record from database');
+        assert(!delErr, 'Clean up test record from database');
+      }
     }
 
     // -------------------------------------------------------------
