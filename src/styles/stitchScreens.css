@@ -1,0 +1,483 @@
+/* ====================================================================
+   NagarDrishti 3D - Stitch UI Screens Stylesheet
+   Imported directly from Stitch Project 8121086159565757029
+   Preserving exact color tokens, typography, padding, micro-animations
+   ==================================================================== */
+
+:root {
+  --stitch-primary: #000615;
+  --stitch-primary-container: #0b1f3a;
+  --stitch-on-primary: #ffffff;
+  --stitch-on-primary-container: #7587a7;
+  
+  --stitch-secondary: #006a63;
+  --stitch-secondary-container: #99efe5;
+  --stitch-on-secondary-container: #006f67;
+  --stitch-secondary-fixed: #9cf2e8;
+  --stitch-on-secondary-fixed: #00201d;
+  --stitch-secondary-fixed-dim: #80d5cb;
+  --stitch-on-secondary: #ffffff;
+  
+  --stitch-surface: #f7f9fb;
+  --stitch-surface-bright: #f7f9fb;
+  --stitch-surface-container-lowest: #ffffff;
+  --stitch-surface-container-low: #f2f4f6;
+  --stitch-surface-container: #eceef0;
+  --stitch-surface-container-high: #e6e8ea;
+  --stitch-surface-container-highest: #e0e3e5;
+  --stitch-surface-dim: #d8dadc;
+  
+  --stitch-on-surface: #191c1e;
+  --stitch-on-surface-variant: #44474d;
+  --stitch-outline: #75777e;
+  --stitch-outline-variant: #c4c6ce;
+  
+  --stitch-error: #ba1a1a;
+  --stitch-error-container: #ffdad6;
+  --stitch-on-error-container: #93000a;
+  --stitch-on-error: #ffffff;
+
+  --stitch-font-headline: 'Plus Jakarta Sans', 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+  --stitch-font-body: 'Inter', 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --stitch-font-mono: 'JetBrains Mono', monospace;
+}
+
+/* Base Fullpage Container for Stitch Screens */
+.stitch-screen-wrapper {
+  min-height: 100%;
+  width: 100%;
+  background-color: var(--stitch-surface);
+  color: var(--stitch-on-surface);
+  font-family: var(--stitch-font-body);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 1.25rem 1rem 3rem 1rem;
+}
+
+.stitch-container {
+  width: 100%;
+  max-width: 38rem; /* max-w-xl */
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.stitch-container-wide {
+  width: 100%;
+  max-width: 48rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Brand Header */
+.stitch-brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.stitch-brand-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.stitch-brand-logo {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: contain;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stitch-brand-title {
+  font-family: var(--stitch-font-headline);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 700;
+  color: var(--stitch-primary);
+  letter-spacing: -0.015em;
+}
+
+.stitch-brand-subtitle {
+  font-family: var(--stitch-font-body);
+  font-size: 0.6875rem;
+  line-height: 0.875rem;
+  letter-spacing: 0.04em;
+  color: var(--stitch-on-surface-variant);
+  text-transform: uppercase;
+  font-weight: 600;
+  max-width: 22rem;
+}
+
+/* Transformation Ribbon */
+.stitch-transform-ribbon {
+  background-color: var(--stitch-surface-container-low);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stitch-pipeline-steps {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+  gap: 0.25rem;
+  scrollbar-width: none;
+}
+.stitch-pipeline-steps::-webkit-scrollbar {
+  display: none;
+}
+
+.stitch-pipeline-chip {
+  font-family: var(--stitch-font-mono);
+  font-size: 0.75rem;
+  background-color: var(--stitch-surface-container-lowest);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: var(--stitch-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.stitch-pipeline-chip.verified {
+  background-color: var(--stitch-secondary-fixed);
+  color: var(--stitch-on-secondary-fixed);
+  font-weight: 600;
+}
+
+.stitch-pipeline-arrow {
+  color: var(--stitch-on-surface-variant);
+  font-family: var(--stitch-font-mono);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.stitch-ribbon-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+@media (min-width: 640px) {
+  .stitch-ribbon-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+/* Cards */
+.stitch-card {
+  background-color: var(--stitch-surface-container-lowest);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.stitch-card-header h2 {
+  font-family: var(--stitch-font-headline);
+  font-size: 1.125rem;
+  line-height: 1.5rem;
+  font-weight: 700;
+  color: var(--stitch-primary);
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.stitch-card-header p {
+  font-size: 0.8125rem;
+  color: var(--stitch-on-surface-variant);
+  margin-top: 0.2rem;
+}
+
+/* Form controls */
+.stitch-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.stitch-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--stitch-on-surface);
+  letter-spacing: 0.02em;
+}
+
+.stitch-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background-color: var(--stitch-surface-container-low);
+  border-radius: 0.5rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.stitch-input-wrap:focus-within {
+  background-color: var(--stitch-surface-container-lowest);
+  border-color: var(--stitch-secondary);
+  box-shadow: 0 0 0 2px rgba(0, 106, 99, 0.15);
+}
+
+.stitch-input-icon {
+  position: absolute;
+  left: 0.75rem;
+  font-size: 1.125rem;
+  color: var(--stitch-outline);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+}
+
+.stitch-input {
+  width: 100%;
+  background: transparent;
+  padding: 0.625rem 0.75rem 0.625rem 2.5rem;
+  font-size: 0.875rem;
+  font-family: var(--stitch-font-body);
+  color: var(--stitch-on-surface);
+  outline: none;
+  border: none;
+}
+
+.stitch-input.mono {
+  font-family: var(--stitch-font-mono);
+  letter-spacing: 0.04em;
+}
+
+.stitch-password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  background: transparent;
+  border: none;
+  padding: 0.375rem;
+  color: var(--stitch-outline);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+}
+.stitch-password-toggle:hover {
+  color: var(--stitch-on-surface);
+}
+
+/* Primary Button */
+.stitch-btn-primary {
+  width: 100%;
+  padding: 0.6875rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--stitch-primary-container);
+  color: var(--stitch-on-primary);
+  font-family: var(--stitch-font-body);
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.stitch-btn-primary:hover {
+  background-color: var(--stitch-primary);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+.stitch-btn-primary:active {
+  transform: scale(0.99);
+}
+
+/* Secondary Button */
+.stitch-btn-secondary {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border-radius: 0.5rem;
+  background-color: var(--stitch-surface-container-low);
+  color: var(--stitch-on-surface);
+  font-family: var(--stitch-font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--stitch-surface-container-high);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stitch-btn-secondary:hover {
+  background-color: var(--stitch-surface-container);
+}
+
+/* Feedback Status Banner */
+.stitch-status-banner {
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  transition: all 0.25s ease;
+}
+
+.stitch-status-banner.loading {
+  background-color: var(--stitch-primary-container);
+  color: var(--stitch-on-primary);
+}
+
+.stitch-status-banner.success {
+  background-color: var(--stitch-secondary-fixed);
+  color: var(--stitch-on-secondary-fixed);
+}
+
+.stitch-status-banner.error {
+  background-color: var(--stitch-error-container);
+  color: var(--stitch-on-error-container);
+}
+
+.stitch-status-banner.unauthorized {
+  background-color: var(--stitch-surface-container-highest);
+  color: var(--stitch-on-surface);
+}
+
+.stitch-status-banner.pending {
+  background-color: var(--stitch-surface-container);
+  color: var(--stitch-on-surface);
+}
+
+.stitch-status-banner.sso {
+  background-color: var(--stitch-secondary-container);
+  color: var(--stitch-on-secondary-container);
+}
+
+/* UX Showcase Panel */
+.stitch-ux-showcase {
+  margin-top: 1.5rem;
+  background-color: var(--stitch-surface-container-low);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.stitch-ux-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.stitch-ux-pill {
+  font-family: var(--stitch-font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.25rem;
+  background-color: var(--stitch-surface-container);
+  color: var(--stitch-on-surface);
+  border: 1px solid var(--stitch-surface-container-high);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  transition: all 0.15s ease;
+}
+
+.stitch-ux-pill:hover {
+  background-color: var(--stitch-surface-container-highest);
+}
+
+.stitch-ux-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}
+
+/* Role Matrix & Workspace Selection */
+.stitch-role-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  background-color: var(--stitch-surface-container-lowest);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.stitch-role-card:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border-color: var(--stitch-surface-container-high);
+}
+
+.stitch-role-card.active {
+  background-color: rgba(153, 239, 229, 0.15);
+  border-color: var(--stitch-secondary);
+  box-shadow: 0 4px 12px rgba(0, 106, 99, 0.12);
+}
+
+.stitch-role-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stitch-selection-check {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 9999px;
+  background-color: var(--stitch-secondary);
+  color: var(--stitch-on-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Animations */
+@keyframes stitch-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.stitch-spin {
+  animation: stitch-spin 1s linear infinite;
+}
