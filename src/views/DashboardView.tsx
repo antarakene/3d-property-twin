@@ -322,11 +322,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
         {searchQuery && (
           <div style={{ marginTop: '12px', padding: '10px 14px', background: 'var(--color-surface-container-low)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)' }}>
             <div style={{ fontSize: '11px', color: 'var(--color-outline)', marginBottom: '6px' }}>
-              Found {vsus.filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase())).length} candidate units matching &ldquo;{searchQuery}&rdquo;:
+              Found {vsus.filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || (v.canonical3dUlpin && v.canonical3dUlpin.toLowerCase().includes(searchQuery.toLowerCase())) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase())).length} candidate units matching &ldquo;{searchQuery}&rdquo;:
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {vsus
-                .filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase()))
+                .filter(v => v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) || (v.canonical3dUlpin && v.canonical3dUlpin.toLowerCase().includes(searchQuery.toLowerCase())) || v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase()))
                 .slice(0, 5)
                 .map(v => (
                   <button

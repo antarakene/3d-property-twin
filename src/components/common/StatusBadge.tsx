@@ -23,6 +23,17 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
       iconName = 'schedule';
       displayLabel = 'Under Review';
       break;
+    case 'Returned for Correction':
+    case 'Correction Required':
+      badgeClass = 'correction';
+      iconName = 'assignment_return';
+      displayLabel = 'Correction Required';
+      break;
+    case 'Rejected':
+      badgeClass = 'rejected';
+      iconName = 'cancel';
+      displayLabel = 'Rejected';
+      break;
     case 'Draft':
     case 'Candidate':
       badgeClass = 'draft';
@@ -30,10 +41,9 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, size = 'md' })
       displayLabel = 'Draft';
       break;
     case 'Conflict':
-    case 'Rejected':
       badgeClass = 'conflict';
       iconName = 'warning';
-      displayLabel = status === 'Rejected' ? 'Rejected' : 'Potential Conflict';
+      displayLabel = 'Potential Conflict';
       break;
     case 'Estimated':
       badgeClass = 'estimated';

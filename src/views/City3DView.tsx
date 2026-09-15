@@ -55,6 +55,7 @@ function normalizeCadastralVsu(raw: any): CandidateVsu | null {
     floorId: raw.floorId || `floor-${floorNum}`,
     floorNumber: floorNum,
     prototypeVsuIdentifier: identifier,
+    canonical3dUlpin: raw.canonical3dUlpin || raw.ulpin,
     unitNumber: String(raw.unitNumber || '101'),
     unitName: raw.unitName || `Unit ${raw.unitNumber}`,
     useType: raw.useType || raw.use || 'Residential',
@@ -587,12 +588,25 @@ export const City3DView: React.FC<City3DViewProps> = ({
                   borderRadius: '0 4px 4px 0',
                 }}
               >
-                <div style={{ fontSize: '9px', color: '#7dd3fc', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
-                  PROTOTYPE VSU IDENTIFIER ({activeBuilding.name})
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '9px', color: '#7dd3fc', fontFamily: 'var(--font-mono)', fontWeight: 700 }}>
+                    PROTOTYPE VSU IDENTIFIER ({activeBuilding.name})
+                  </div>
+                  {activeVsu.canonical3dUlpin && (
+                    <span style={{ fontSize: '9px', fontWeight: 700, padding: '1px 5px', background: 'rgba(2, 132, 199, 0.3)', color: '#38bdf8', borderRadius: '3px', fontFamily: 'var(--font-mono)' }}>
+                      3D-ULPIN
+                    </span>
+                  )}
                 </div>
                 <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, color: '#ffffff', wordBreak: 'break-all', marginTop: '2px' }}>
                   {activeVsu.prototypeVsuIdentifier}
                 </div>
+                {activeVsu.canonical3dUlpin && (
+                  <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid rgba(255, 255, 255, 0.1)', fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#38bdf8', wordBreak: 'break-all' }}>
+                    <span style={{ color: '#94a3b8' }}>Canonical 3D-ULPIN: </span>
+                    {activeVsu.canonical3dUlpin}
+                  </div>
+                )}
               </div>
 
               {/* 3D Focus & Floor Isolator Quick Actions */}

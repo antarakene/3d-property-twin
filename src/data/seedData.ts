@@ -234,12 +234,17 @@ export function generateAllSeedFloorsAndVsus(): { floors: Floor[]; vsus: Candida
           vsuStatus = 'Conflict';
         }
 
+        const plotStr = bld.parcelUlpin === 'DEMO-MH-MUM-0001' ? 'CTS98122A' : bld.parcelUlpin === 'DEMO-MH-MUM-0002' ? 'CTS98122B' : 'CTS98122C';
+        const bldCodeClean = bld.code.replace(/[^A-Z0-9]/g, '');
+        const canonical3dUlpin = `ULPIN3D-MH-${plotStr}-${bldCodeClean}-F${String(f).padStart(2, '0')}-U${unitNumber}-Z${zBottom.toFixed(1)}_${zTop.toFixed(1)}`;
+
         const vsuObj: CandidateVsu = {
           id: `vsu-${bld.code.toLowerCase()}-${f}-${tpl.code}`,
           buildingId: bld.id,
           floorId,
           floorNumber: f,
           prototypeVsuIdentifier: vsuIdentifier,
+          canonical3dUlpin,
           unitNumber,
           unitName: `${tpl.name} ${unitNumber}`,
           useType: tpl.use,

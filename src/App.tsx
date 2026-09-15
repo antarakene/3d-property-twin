@@ -27,6 +27,9 @@ export default function App() {
   // Active 3D mode hint
   const [city3dMode, setCity3dMode] = useState<'cadastre' | 'audit' | 'sos'>('cadastre');
 
+  // Track newly registered VSU for active highlight in registry
+  const [highlightedVsuId, setHighlightedVsuId] = useState<string | null>(null);
+
   // Badge counts
   const [alertsCount, setAlertsCount] = useState<number>(3);
   const [pendingTasksCount, setPendingTasksCount] = useState<number>(1);
@@ -143,13 +146,22 @@ export default function App() {
               onNavigateTo3D={handleNavigateTo3DFromRegistry}
               onNavigateToVerify={handleNavigateToVerify}
               currentRole={currentRole}
+              initialSelectedVsuId={highlightedVsuId}
+              onClearInitialSelection={() => setHighlightedVsuId(null)}
             />
           )}
 
           {/* Candidate VSU Registration Form */}
           {activeTab === 'register' && (
             <CandidateRegistrationView
-              onSuccess={() => setActiveTab('registry')}
+              onSuccess={(vsuId) => {
+                setHighlightedVsuId(vsuId);
+                setActiveTab('registry');
+              }}
+              onNavigateToVerify={(vsuId) => {
+                if (vsuId) setHighlightedVsuId(vsuId);
+                setActiveTab('verification');
+              }}
               onCancel={() => setActiveTab('dashboard')}
             />
           )}
@@ -162,6 +174,7 @@ export default function App() {
                 setSelectedBuildingId(bId);
                 setActiveTab('city3d');
               }}
+              onSelectVsu={handleNavigateTo3DFromRegistry}
             />
           )}
 
@@ -170,6 +183,12 @@ export default function App() {
             <VerificationQueueView
               currentRole={currentRole}
               onNavigateTo3D={handleNavigateTo3DFromRegistry}
+              initialSelectedVsuId={highlightedVsuId || selectedVsu?.id}
+              initialSelectedIdentifier={selectedVsu?.prototypeVsuIdentifier}
+              onClearInitialSelection={() => {
+                setHighlightedVsuId(null);
+                setSelectedVsu(null);
+              }}
             />
           )}
 

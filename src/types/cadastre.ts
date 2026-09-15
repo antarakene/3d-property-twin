@@ -62,6 +62,7 @@ export interface CandidateVsu {
   floorId: string;
   floorNumber?: number;
   prototypeVsuIdentifier: string; // e.g. DEMO-MH-MUM-0001-VSU-A-07-702
+  canonical3dUlpin?: string; // e.g. ULPIN3D-MH-CTS98122A-TOWERB-F07-U705-Z24.3_28.2
   unitNumber: string; // e.g. 702
   unitName?: string;
   useType: string;
@@ -77,6 +78,10 @@ export interface CandidateVsu {
   quadrantCode?: string;
   hasViolation?: boolean;
   violationDetails?: string | null;
+  noticePeriodDays?: number;
+  noticeDeadline?: string;
+  officerRemarks?: string;
+  discrepancySummary?: string;
   geometry?: any;
 }
 
@@ -136,6 +141,9 @@ export interface VerificationTask {
   vsuIdentifier?: string;
   verificationStatus: VerificationStatus;
   officerNotes?: string;
+  noticePeriodDays?: number;
+  noticeDeadline?: string;
+  rejectionReason?: string;
   checklistResults?: {
     manifold2d?: boolean;
     boundaryWithinBuilding?: boolean;

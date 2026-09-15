@@ -8,12 +8,16 @@ interface RegistryViewProps {
   onNavigateTo3D: (vsu: CandidateVsu) => void;
   onNavigateToVerify?: (vsu: CandidateVsu) => void;
   currentRole?: UserRole;
+  initialSelectedVsuId?: string | null;
+  onClearInitialSelection?: () => void;
 }
 
 export const RegistryView: React.FC<RegistryViewProps> = ({
   onNavigateTo3D,
   onNavigateToVerify,
   currentRole = 'public_demo',
+  initialSelectedVsuId,
+  onClearInitialSelection,
 }) => {
   const [vsus, setVsus] = useState<CandidateVsu[]>([]);
   const [buildings, setBuildings] = useState<Building[]>([]);
@@ -28,6 +32,8 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
 
   // Selected VSU for right inspection drawer
   const [inspectedVsu, setInspectedVsu] = useState<CandidateVsu | null>(null);
+  // Banner for newly registered VSU feedback
+  const [registrationBanner, setRegistrationBanner] = useState<CandidateVsu | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -42,15 +48,31 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
         setBuildings(bData);
         setEvidenceList(eData);
 
+        if (initialSelectedVsuId) {
+          const target = vData.find(
+            (v) => v.id === initialSelectedVsuId || v.prototypeVsuIdentifier === initialSelectedVsuId
+          );
+          if (target) {
+            setInspectedVsu(target);
+            setRegistrationBanner(target);
+            if (target.buildingId) setSelectedBuildingId(target.buildingId);
+            setSelectedFloor('all');
+            setSelectedStatus('all');
+            setSearchQuery('');
+            return;
+          }
+        }
+
         // Default inspect Unit 702
         const unit702 = vData.find((v) => v.unitNumber === '702' || v.unitNumber === '701');
         if (unit702) setInspectedVsu(unit702);
+        else if (vData.length > 0) setInspectedVsu(vData[0]);
       } finally {
         setLoading(false);
       }
     }
     loadData();
-  }, []);
+  }, [initialSelectedVsuId]);
 
   const filteredVsus = vsus.filter((v) => {
     if (selectedBuildingId !== 'all' && v.buildingId !== selectedBuildingId) return false;
@@ -59,6 +81,7 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
     if (
       searchQuery &&
       !v.prototypeVsuIdentifier.toLowerCase().includes(searchQuery.toLowerCase()) &&
+      !(v.canonical3dUlpin || '').toLowerCase().includes(searchQuery.toLowerCase()) &&
       !v.unitNumber.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !(v.mockOccupantName || '').toLowerCase().includes(searchQuery.toLowerCase())
     ) {
@@ -75,7 +98,7 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
   return (
     <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
       {/* Main Table Workspace */}
-      <div style={{ flex: 1, padding: '20px 24px', overflowY: 'auto' }}>
+      <div style={{ flex: 1, minWidth: 0, padding: '20px 24px', overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -118,6 +141,91 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
             Showing {filteredVsus.length} of {vsus.length} Candidate Units
           </span>
         </div>
+
+        {/* Dynamic Candidate Registration Success Banner */}
+        {registrationBanner && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'linear-gradient(135deg, rgba(5, 150, 105, 0.12) 0%, rgba(2, 132, 199, 0.12) 100%)',
+              border: '1px solid #10b981',
+              borderRadius: 'var(--radius-md)',
+              padding: '14px 18px',
+              marginBottom: '16px',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.15)',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <span className="material-symbols-outlined" style={{ fontSize: '28px', color: '#059669', marginTop: '2px' }}>
+                verified
+              </span>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 700, color: '#047857' }}>
+                    Candidate Unit Successfully Registered & Queued for Verification!
+                  </span>
+                  <span className="status-badge review" style={{ fontSize: '10px' }}>
+                    Under Review
+                  </span>
+                </div>
+                <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '10px', fontSize: '11px', fontFamily: 'var(--font-mono)' }}>
+                  <span style={{ color: 'var(--color-primary)', fontWeight: 600 }}>
+                    Prototype: {registrationBanner.prototypeVsuIdentifier}
+                  </span>
+                  <span style={{ color: '#0284c7', background: 'rgba(2, 132, 199, 0.1)', padding: '1px 8px', borderRadius: '4px', fontWeight: 700 }}>
+                    3D-ULPIN: {registrationBanner.canonical3dUlpin}
+                  </span>
+                </div>
+                <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px', margin: 0 }}>
+                  Automated geometric validation passed. Initial verification task allocated in Surveyor Queue.
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ fontSize: '11px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                onClick={() => onNavigateTo3D(registrationBanner)}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>view_in_ar</span>
+                Inspect 3D Twin
+              </button>
+              {onNavigateToVerify && (
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  style={{ fontSize: '11px', padding: '6px 12px', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}
+                  onClick={() => onNavigateToVerify(registrationBanner)}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>fact_check</span>
+                  Verification Queue
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setRegistrationBanner(null);
+                  if (onClearInitialSelection) onClearInitialSelection();
+                }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: 'var(--color-outline)',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+                title="Dismiss banner"
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Filter Toolbar */}
         <div
@@ -180,6 +288,8 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
             <option value="all">All Statuses</option>
             <option value="Verified">Verified</option>
             <option value="Under Review">Under Review</option>
+            <option value="Returned for Correction">Returned for Correction</option>
+            <option value="Rejected">Rejected</option>
             <option value="Draft">Draft</option>
             <option value="Conflict">Conflict</option>
           </select>
@@ -233,10 +343,11 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
             background: 'var(--color-surface-container-lowest)',
             border: '1px solid var(--color-border)',
             borderRadius: 'var(--radius-md)',
-            overflow: 'hidden',
+            overflowX: 'auto',
+            overflowY: 'hidden',
           }}
         >
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+          <table style={{ width: '100%', minWidth: '950px', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
               <tr
                 style={{
@@ -248,14 +359,14 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
                   textTransform: 'uppercase',
                 }}
               >
-                <th style={{ padding: '10px 14px' }}>Prototype VSU Identifier</th>
-                <th style={{ padding: '10px 12px' }}>Unit</th>
-                <th style={{ padding: '10px 12px' }}>Type</th>
-                <th style={{ padding: '10px 12px' }}>Carpet / Built-up</th>
-                <th style={{ padding: '10px 12px' }}>Z-Elevation</th>
-                <th style={{ padding: '10px 12px' }}>Confidence</th>
-                <th style={{ padding: '10px 12px' }}>Status</th>
-                <th style={{ padding: '10px 14px', textAlign: 'right' }}>Actions</th>
+                <th style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>Prototype VSU Identifier</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Unit</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Type</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Carpet / Built-up</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Z-Elevation</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Confidence</th>
+                <th style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>Status</th>
+                <th style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -285,17 +396,25 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
                         transition: 'background 0.1s ease',
                       }}
                     >
-                      <td style={{ padding: '10px 14px' }}>
-                        <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-primary)', fontSize: '12px' }}>
+                      <td style={{ padding: '10px 14px', whiteSpace: 'nowrap' }}>
+                        <div style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--color-primary)', fontSize: '12px', whiteSpace: 'nowrap' }}>
                           {vsu.prototypeVsuIdentifier}
                         </div>
+                        {vsu.canonical3dUlpin && (
+                          <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#0284c7', marginTop: '3px', display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontWeight: 700, padding: '1px 5px', background: 'rgba(2, 132, 199, 0.12)', borderRadius: '3px', border: '1px solid rgba(2, 132, 199, 0.25)', flexShrink: 0 }}>
+                              3D-ULPIN
+                            </span>
+                            <span style={{ whiteSpace: 'nowrap' }}>{vsu.canonical3dUlpin}</span>
+                          </div>
+                        )}
                         {vsu.mockOccupantName && (
-                          <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '2px', whiteSpace: 'nowrap' }}>
                             Occupant: {vsu.mockOccupantName}
                           </div>
                         )}
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                         <strong style={{ fontFamily: 'var(--font-mono)', fontSize: '12px' }}>
                           U-{vsu.unitNumber}
                         </strong>
@@ -303,24 +422,24 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
                           Fl {vsu.floorNumber || 1}
                         </div>
                       </td>
-                      <td style={{ padding: '10px 12px', fontSize: '11px' }}>
+                      <td style={{ padding: '10px 12px', fontSize: '11px', whiteSpace: 'nowrap' }}>
                         {vsu.useType}
                       </td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px' }}>
+                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', whiteSpace: 'nowrap' }}>
                         {vsu.carpetAreaSqm} m² / {vsu.builtupAreaSqm} m²
                       </td>
-                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-secondary)' }}>
+                      <td style={{ padding: '10px 12px', fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-secondary)', whiteSpace: 'nowrap' }}>
                         {vsu.zBottomM.toFixed(1)}m – {vsu.zTopM.toFixed(1)}m
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', fontWeight: 600 }}>
                           {vsu.confidenceTier}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 12px' }}>
+                      <td style={{ padding: '10px 12px', whiteSpace: 'nowrap' }}>
                         <StatusBadge status={vsu.verificationStatus} size="sm" />
                       </td>
-                      <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                      <td style={{ padding: '10px 14px', textAlign: 'right', whiteSpace: 'nowrap' }}>
                         <button
                           className="btn-secondary"
                           style={{ padding: '4px 8px', fontSize: '10px', marginRight: '6px' }}
@@ -345,7 +464,9 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
       {inspectedVsu && (
         <aside
           style={{
-            width: 'var(--drawer-width)',
+            width: '350px',
+            maxWidth: '380px',
+            flexShrink: 0,
             background: 'var(--color-surface-container-lowest)',
             borderLeft: '1px solid var(--color-border)',
             padding: '20px',
@@ -355,15 +476,92 @@ export const RegistryView: React.FC<RegistryViewProps> = ({
             gap: '16px',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-            <div>
-              <span className="metric-label">Candidate Spatial Unit</span>
-              <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', wordBreak: 'break-all', marginTop: '2px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '8px' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span className="metric-label">Candidate Spatial Unit</span>
+                <button
+                  type="button"
+                  onClick={() => setInspectedVsu(null)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer',
+                    color: 'var(--color-outline)',
+                    padding: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    borderRadius: '4px',
+                  }}
+                  title="Close Drawer"
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: '18px' }}>close</span>
+                </button>
+              </div>
+              <h2 style={{ fontFamily: 'var(--font-mono)', fontSize: '13px', fontWeight: 700, color: 'var(--color-primary)', wordBreak: 'break-word', overflowWrap: 'anywhere', marginTop: '2px' }}>
                 {inspectedVsu.prototypeVsuIdentifier}
               </h2>
+              {inspectedVsu.canonical3dUlpin && (
+                <div style={{ marginTop: '6px', padding: '6px 8px', background: 'rgba(2, 132, 199, 0.1)', border: '1px solid rgba(2, 132, 199, 0.25)', borderRadius: 'var(--radius-sm)' }}>
+                  <div style={{ fontSize: '9px', fontWeight: 700, color: '#0284c7', fontFamily: 'var(--font-mono)', textTransform: 'uppercase' }}>
+                    Canonical 3D-ULPIN (Bhu-Aadhaar)
+                  </div>
+                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', fontWeight: 700, color: '#0284c7', wordBreak: 'break-word', overflowWrap: 'anywhere', marginTop: '2px' }}>
+                    {inspectedVsu.canonical3dUlpin}
+                  </div>
+                </div>
+              )}
             </div>
             <StatusBadge status={inspectedVsu.verificationStatus} size="md" />
           </div>
+
+          {/* Statutory Adjudication Feedback Banner */}
+          {inspectedVsu.verificationStatus === 'Verified' ? (
+            <div style={{ padding: '10px 12px', background: 'rgba(5, 150, 105, 0.1)', border: '1px solid #10b981', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#047857', fontWeight: 700, fontSize: '11px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>verified</span>
+                <span>Statutory 3D Title Record Verified & Active</span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px', margin: 0 }}>
+                {inspectedVsu.officerRemarks || 'Validated against sanctioned architectural floor plans and mobile sensor surveys.'}
+              </p>
+            </div>
+          ) : inspectedVsu.verificationStatus === 'Returned for Correction' ? (
+            <div style={{ padding: '10px 12px', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid #f59e0b', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#b45309', fontWeight: 700, fontSize: '11px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>assignment_return</span>
+                <span>Official Notice: {inspectedVsu.noticePeriodDays || 15}-Day Rectification Period</span>
+              </div>
+              {inspectedVsu.noticeDeadline && (
+                <div style={{ fontFamily: 'var(--font-mono)', fontSize: '10px', color: '#b45309', marginTop: '3px', fontWeight: 700 }}>
+                  Statutory Deadline: {inspectedVsu.noticeDeadline}
+                </div>
+              )}
+              <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px', margin: 0 }}>
+                <strong>Officer Requirement:</strong> {inspectedVsu.officerRemarks || 'Submit rectified documentation to municipal revenue desk.'}
+              </p>
+            </div>
+          ) : inspectedVsu.verificationStatus === 'Rejected' ? (
+            <div style={{ padding: '10px 12px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#dc2626', fontWeight: 700, fontSize: '11px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>cancel</span>
+                <span>Candidate Registration Rejected</span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px', margin: 0 }}>
+                <strong>Non-compliance Grounds:</strong> {inspectedVsu.officerRemarks || 'Unit geometry or documents fail statutory bylaws.'}
+              </p>
+            </div>
+          ) : (
+            <div style={{ padding: '10px 12px', background: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.25)', borderRadius: 'var(--radius-sm)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#0284c7', fontWeight: 700, fontSize: '11px' }}>
+                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>schedule</span>
+                <span>Candidate Unit Under Verification</span>
+              </div>
+              <p style={{ fontSize: '11px', color: 'var(--color-on-surface-variant)', marginTop: '4px', margin: 0 }}>
+                Automated geometric checks passed. Allocated in Surveyor & Officer Verification Queue for final statutory determination.
+              </p>
+            </div>
+          )}
 
           {/* Metric Matrix */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
