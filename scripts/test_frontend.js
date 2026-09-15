@@ -387,12 +387,12 @@ async function runFrontendTests() {
     const topHeaderCode = fs.readFileSync(path.join(ROOT_DIR, 'src/components/layout/TopHeader.tsx'), 'utf8');
     assert(topHeaderCode.includes('public_demo') && topHeaderCode.includes('surveyor') && topHeaderCode.includes('municipal_officer') && topHeaderCode.includes('admin'), 'TopHeader defines configurations for all 4 user roles');
     assert(topHeaderCode.includes('ROLE_CONFIG[currentRole]'), 'TopHeader dynamically renders active persona badge, icon, and description');
-    assert(topHeaderCode.includes('<select') && topHeaderCode.includes('onRoleChange(e.target.value as UserRole)'), 'TopHeader provides interactive role switching dropdown');
+    assert(topHeaderCode.includes('role-authenticated-badge') && topHeaderCode.includes('roleMeta.label'), 'TopHeader renders authenticated role badge without unauthorized role change dropdown');
 
     const sidebarCode = fs.readFileSync(path.join(ROOT_DIR, 'src/components/layout/SidebarNav.tsx'), 'utf8');
     assert(sidebarCode.includes('Citizen Services') && sidebarCode.includes('Field Surveyor Tools') && sidebarCode.includes('Revenue & Enforcement') && sidebarCode.includes('Master Spatial Admin'), 'SidebarNav renders role-customized navigation section headers');
     assert(sidebarCode.includes('Public Registry (VSUs)') && sidebarCode.includes('3D As-Built Twin') && sidebarCode.includes('3D Violation Audit'), 'SidebarNav adapts navigation item labels based on active role');
-    assert(sidebarCode.includes('isPublic &&') && sidebarCode.includes('lock'), 'SidebarNav indicates locked authority workflows for public citizen role');
+    assert(sidebarCode.includes('canAccessWorkflows') && sidebarCode.includes('canRegister'), 'SidebarNav filters navigation to only display accessible windows');
     assert(sidebarCode.includes('+ Field'), 'SidebarNav highlights field surveyor quick actions');
 
     const dashboardCode = fs.readFileSync(path.join(ROOT_DIR, 'src/views/DashboardView.tsx'), 'utf8');

@@ -3,9 +3,11 @@ import type { UserRole } from '../../types/cadastre';
 
 interface TopHeaderProps {
   currentRole: UserRole;
-  onRoleChange: (role: UserRole) => void;
+  onRoleChange?: (role: UserRole) => void;
   activeAlertsCount?: number;
   onOpenAlerts?: () => void;
+  userEmail?: string;
+  onLogout?: () => void;
 }
 
 const ROLE_CONFIG: Record<
@@ -52,9 +54,10 @@ const ROLE_CONFIG: Record<
 
 export const TopHeader: React.FC<TopHeaderProps> = ({
   currentRole,
-  onRoleChange,
   activeAlertsCount = 0,
   onOpenAlerts,
+  userEmail,
+  onLogout,
 }) => {
   const roleMeta = ROLE_CONFIG[currentRole] || ROLE_CONFIG.public_demo;
 
@@ -137,29 +140,83 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
           </button>
         )}
 
-        {/* Role Switcher Dropdown */}
+        {/* Authenticated Active Role Display (Role change disabled after login) */}
         <div
-          className="role-switcher"
+          className="role-authenticated-badge"
           style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '7px',
             border: `1px solid ${roleMeta.border}`,
             background: 'var(--color-surface-container-low)',
+            padding: '5px 11px',
+            borderRadius: 'var(--radius-sm)',
           }}
+          title={`Authenticated: ${userEmail || 'User'} (${roleMeta.label}) - Role changes locked during active session`}
         >
           <span className="material-symbols-outlined" style={{ fontSize: '16px', color: roleMeta.color }}>
-            badge
+            {roleMeta.icon}
           </span>
-          <select
-            className="role-select"
-            value={currentRole}
-            onChange={(e) => onRoleChange(e.target.value as UserRole)}
-            style={{ fontWeight: 600, color: 'var(--color-on-surface)' }}
+          <span style={{ fontWeight: 600, fontSize: '12px', color: 'var(--color-on-surface)' }}>
+            {roleMeta.label}
+          </span>
+          {userEmail && (
+            <span
+              style={{
+                fontSize: '10px',
+                color: 'var(--color-outline)',
+                fontFamily: 'var(--font-mono)',
+                maxWidth: '140px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {userEmail}
+            </span>
+          )}
+          <span
+            style={{
+              fontSize: '8px',
+              padding: '1px 5px',
+              borderRadius: '3px',
+              background: 'rgba(5, 150, 105, 0.15)',
+              color: '#059669',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.4px',
+              border: '1px solid rgba(5, 150, 105, 0.3)',
+            }}
           >
-            <option value="public_demo">Public / Demo Explorer</option>
-            <option value="surveyor">Authorized Surveyor</option>
-            <option value="municipal_officer">Municipal Revenue Officer</option>
-            <option value="admin">System Administrator</option>
-          </select>
+            Session Active
+          </span>
         </div>
+
+        {/* Sign Out Action */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+              background: 'var(--color-surface-container-low)',
+              color: 'var(--color-on-surface-variant)',
+              border: '1px solid var(--color-border)',
+              padding: '5px 9px',
+              borderRadius: 'var(--radius-sm)',
+              fontSize: '11px',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+            title="Sign out and return to Login"
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>
+              logout
+            </span>
+            <span>Sign Out</span>
+          </button>
+        )}
       </div>
     </header>
   );
